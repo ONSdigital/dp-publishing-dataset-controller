@@ -2,48 +2,40 @@ package dataset
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
-	//datasetclient "github.com/ONSdigital/dp-api-clients-go/dataset"
-	"github.com/ONSdigital/dp-api-clients-go/headers"
 	"github.com/ONSdigital/dp-publishing-dataset-controller/mapper"
 	"github.com/ONSdigital/log.go/log"
+
+	dphandlers "github.com/ONSdigital/dp-net/handlers"
 )
 
 // GetAll returns a mapped list of all datasets
 func GetAll(dc Client) http.HandlerFunc {
-	return func(w http.ResponseWriter, req *http.Request) {
-		getAll(w, req, dc)
-	}
+	return dphandlers.ControllerHandler(func(w http.ResponseWriter, r *http.Request, lang, collectionID, accessToken string) {
+		getAll(w, r, dc, accessToken, collectionID, lang)
+	})
 }
 
-func getAll(w http.ResponseWriter, req *http.Request, dc Client) {
+func getAll(w http.ResponseWriter, req *http.Request, dc Client, userAccessToken, collectionID, lang string) {
 	ctx := req.Context()
 
-	userAccessToken, err := headers.GetUserAuthToken(req)
-	if err == headers.ErrHeaderNotFound {
-		log.Event(ctx, "no user access token header set", log.ERROR, log.Error(err))
-		http.Error(w, "no user access token header set", http.StatusBadRequest)
-		return
-	}
-	if err != nil {
-		log.Event(ctx, "error getting user access token from header", log.ERROR, log.Error(err))
-		http.Error(w, "error getting user access token from header", http.StatusBadRequest)
+	if userAccessToken == "" {
+		userAccessTokenErrMsg := "no user access token header set"
+		log.Event(ctx, userAccessTokenErrMsg, log.ERROR, log.Error(errors.New(userAccessTokenErrMsg)))
+		http.Error(w, userAccessTokenErrMsg, http.StatusBadRequest)
 		return
 	}
 
-	collectionID, err := headers.GetCollectionID(req)
-	if err == headers.ErrHeaderNotFound {
-		log.Event(ctx, "no collection ID header set", log.ERROR, log.Error(err))
-		http.Error(w, "no collection ID header set", http.StatusBadRequest)
+	if collectionID == "" {
+		collectionIDErrMsg := "no collection ID header set"
+		log.Event(ctx, collectionIDErrMsg, log.ERROR, log.Error(errors.New(collectionIDErrMsg)))
+		http.Error(w, collectionIDErrMsg, http.StatusBadRequest)
 		return
 	}
-	if err != nil {
-		log.Event(ctx, "error getting collection ID from header", log.ERROR, log.Error(err))
-		http.Error(w, "error getting collection ID from header", http.StatusBadRequest)
-		return
-	}
-	log.Event(ctx, "calling get datasets")
+
+	log.Event(ctx, "calling get datasets", log.INFO)
 
 	datasets, err := dc.GetDatasets(ctx, userAccessToken, "", collectionID)
 	if err != nil {
