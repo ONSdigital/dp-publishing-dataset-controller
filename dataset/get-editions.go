@@ -5,20 +5,21 @@ import (
 	"fmt"
 	"net/http"
 
-	dphandlers "github.com/ONSdigital/dp-net/handlers"
+	datasetApiSdk "github.com/ONSdigital/dp-dataset-api/sdk"
+	dphandlers "github.com/ONSdigital/dp-net/v3/handlers"
 	"github.com/ONSdigital/dp-publishing-dataset-controller/mapper"
 	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/gorilla/mux"
 )
 
 // GetEditions returns a mapped list of all editions
-func GetEditions(dc DatasetClient) http.HandlerFunc {
+func GetEditions(dc DatasetAPIClient) http.HandlerFunc {
 	return dphandlers.ControllerHandler(func(w http.ResponseWriter, r *http.Request, lang, collectionID, accessToken string) {
 		getEditions(w, r, dc, accessToken, collectionID, lang)
 	})
 }
 
-func getEditions(w http.ResponseWriter, req *http.Request, dc DatasetClient, userAccessToken, collectionID, lang string) {
+func getEditions(w http.ResponseWriter, req *http.Request, dc DatasetAPIClient, userAccessToken, collectionID, lang string) {
 	ctx := req.Context()
 
 	vars := mux.Vars(req)
@@ -36,9 +37,14 @@ func getEditions(w http.ResponseWriter, req *http.Request, dc DatasetClient, use
 		"collectionID": collectionID,
 	}
 
+	headers := datasetApiSdk.Headers{
+		CollectionID: collectionID,
+		AccessToken:  userAccessToken,
+	}
+
 	log.Info(ctx, "calling get editions", log.Data(logInfo))
 
-	dataset, err := dc.GetDatasetCurrentAndNext(ctx, userAccessToken, "", collectionID, datasetID)
+	dataset, err := dc.GetDatasetCurrentAndNext(ctx, headers, datasetID)
 	if err != nil {
 		errMsg := fmt.Sprintf("error getting dataset from dataset API: %v", err.Error())
 		log.Error(ctx, "error getting dataset from dataset API", err, log.Data(logInfo))
@@ -46,7 +52,7 @@ func getEditions(w http.ResponseWriter, req *http.Request, dc DatasetClient, use
 		return
 	}
 
-	editions, err := dc.GetEditions(ctx, userAccessToken, "", collectionID, datasetID)
+	editions, err := dc.GetEditions(ctx, headers, datasetID, nil)
 	if err != nil {
 		errMsg := fmt.Sprintf("error getting editions from dataset API: %v", err.Error())
 		log.Error(ctx, "error getting editions from dataset API", err, log.Data(logInfo))
@@ -55,18 +61,19 @@ func getEditions(w http.ResponseWriter, req *http.Request, dc DatasetClient, use
 	}
 
 	latestVersionInEdition := make(map[string]string)
-	for _, edition := range editions {
-		_, _, versionID, err := getIDsFromURL(edition.Links.LatestVersion.URL)
+	for _, edition := range editions.Items {
+		_, _, versionID, err := getIDsFromURL(edition.Links.LatestVersion.HRef)
 		if err != nil {
 			latestVersionInEdition[edition.Edition] = ""
 			continue
 		}
-		version, err := dc.GetVersion(ctx, userAccessToken, "", "", collectionID, datasetID, edition.Edition, versionID)
+		version, err := dc.GetVersion(ctx, headers, datasetID, edition.Edition, versionID)
 		if err != nil {
 			latestVersionInEdition[edition.Edition] = ""
 			continue
 		}
 		latestVersionInEdition[edition.Edition] = version.ReleaseDate
+
 	}
 
 	mapped := mapper.AllEditions(ctx, dataset, editions, latestVersionInEdition)

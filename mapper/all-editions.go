@@ -4,15 +4,17 @@ import (
 	"context"
 	"time"
 
-	dataset "github.com/ONSdigital/dp-api-clients-go/v2/dataset"
+	dpDatasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
+	datasetApiSdk "github.com/ONSdigital/dp-dataset-api/sdk"
+
 	"github.com/ONSdigital/dp-publishing-dataset-controller/model"
 	"github.com/ONSdigital/log.go/v2/log"
 )
 
 // AllEditions maps dataset and editions response to editions list page model
-func AllEditions(ctx context.Context, dataset dataset.Dataset, editions []dataset.Edition, latestVersions map[string]string) model.EditionsPage {
+func AllEditions(ctx context.Context, dataset dpDatasetApiModels.DatasetUpdate, editions datasetApiSdk.EditionsList, latestVersions map[string]string) model.EditionsPage {
 	var mappedEditions []model.Edition
-	for _, e := range editions {
+	for _, e := range editions.Items {
 		var timeF string
 		for k, latestVersion := range latestVersions {
 			if k == e.Edition {
@@ -29,6 +31,7 @@ func AllEditions(ctx context.Context, dataset dataset.Dataset, editions []datase
 			Title:       e.Edition,
 			ReleaseDate: timeF,
 		})
+
 	}
 
 	return model.EditionsPage{

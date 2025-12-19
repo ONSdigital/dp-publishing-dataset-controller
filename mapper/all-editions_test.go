@@ -3,32 +3,21 @@ package mapper
 import (
 	"testing"
 
-	dataset "github.com/ONSdigital/dp-api-clients-go/v2/dataset"
+	"github.com/ONSdigital/dp-dataset-api/models"
+	datasetApiSdk "github.com/ONSdigital/dp-dataset-api/sdk"
 	"github.com/ONSdigital/dp-publishing-dataset-controller/model"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-var mockedVersion = dataset.Version{
-	ID:          "test-id-1",
-	Version:     1,
-	ReleaseDate: "2020-11-07T00:00:00.000Z",
-	State:       "published",
-}
-
-var mockedDataset = dataset.Dataset{
-	Next: &dataset.DatasetDetails{
+var mockedDataset = models.DatasetUpdate{
+	Next: &models.Dataset{
 		Title: "Test title",
 	},
 }
 
-var mockedEditions = []dataset.Edition{
-	{
-		Edition: "edition-1",
-	},
-	{
-		Edition: "edition-2",
-	},
+var mockedEditions = datasetApiSdk.EditionsList{
+	Items: []models.Edition{models.Edition{Edition: "edition-1"}, models.Edition{Edition: "edition-2"}},
 }
 
 var mockedLatestVersions = map[string]string{"edition-1": "2020-11-07T00:00:00.000Z", "edition-2": ""}

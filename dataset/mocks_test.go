@@ -5,132 +5,104 @@ package dataset
 
 import (
 	"context"
-	datasetclient "github.com/ONSdigital/dp-api-clients-go/v2/dataset"
 	zebedeeclient "github.com/ONSdigital/dp-api-clients-go/v2/zebedee"
+	dpDatasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
+	datasetApiSdk "github.com/ONSdigital/dp-dataset-api/sdk"
 	babbageclient "github.com/ONSdigital/dp-publishing-dataset-controller/clients/topics"
 	"sync"
 )
 
-// Ensure, that DatasetClientMock does implement DatasetClient.
+// Ensure, that DatasetAPIClientMock does implement DatasetAPIClient.
 // If this is not the case, regenerate this file with moq.
-var _ DatasetClient = &DatasetClientMock{}
+var _ DatasetAPIClient = &DatasetAPIClientMock{}
 
-// DatasetClientMock is a mock implementation of DatasetClient.
+// DatasetAPIClientMock is a mock implementation of DatasetAPIClient.
 //
-//	func TestSomethingThatUsesDatasetClient(t *testing.T) {
+//	func TestSomethingThatUsesDatasetAPIClient(t *testing.T) {
 //
-//		// make and configure a mocked DatasetClient
-//		mockedDatasetClient := &DatasetClientMock{
-//			GetFunc: func(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, datasetID string) (datasetclient.DatasetDetails, error) {
-//				panic("mock out the Get method")
-//			},
-//			GetDatasetCurrentAndNextFunc: func(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, datasetID string) (datasetclient.Dataset, error) {
+//		// make and configure a mocked DatasetAPIClient
+//		mockedDatasetAPIClient := &DatasetAPIClientMock{
+//			GetDatasetCurrentAndNextFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string) (dpDatasetApiModels.DatasetUpdate, error) {
 //				panic("mock out the GetDatasetCurrentAndNext method")
 //			},
-//			GetDatasetsInBatchesFunc: func(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, batchSize int, maxWorkers int) (datasetclient.List, error) {
+//			GetDatasetsInBatchesFunc: func(ctx context.Context, headers datasetApiSdk.Headers, batchSize int, maxWorkers int) (datasetApiSdk.DatasetsList, error) {
 //				panic("mock out the GetDatasetsInBatches method")
 //			},
-//			GetEditionFunc: func(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, datasetID string, edition string) (datasetclient.Edition, error) {
+//			GetEditionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string) (dpDatasetApiModels.Edition, error) {
 //				panic("mock out the GetEdition method")
 //			},
-//			GetEditionsFunc: func(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, datasetID string) ([]datasetclient.Edition, error) {
+//			GetEditionsFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, q *datasetApiSdk.QueryParams) (datasetApiSdk.EditionsList, error) {
 //				panic("mock out the GetEditions method")
 //			},
-//			GetInstanceFunc: func(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, instanceID string, ifMatch string) (datasetclient.Instance, string, error) {
-//				panic("mock out the GetInstance method")
-//			},
-//			GetVersionFunc: func(ctx context.Context, userAuthToken string, serviceAuthToken string, downloadServiceAuthToken string, collectionID string, datasetID string, edition string, version string) (datasetclient.Version, error) {
+//			GetVersionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, version string) (dpDatasetApiModels.Version, error) {
 //				panic("mock out the GetVersion method")
 //			},
-//			GetVersionWithHeadersFunc: func(ctx context.Context, userAuthToken string, serviceAuthToken string, downloadServiceAuthToken string, collectionID string, datasetID string, edition string, version string) (datasetclient.Version, datasetclient.ResponseHeaders, error) {
+//			GetVersionWithHeadersFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, version string) (dpDatasetApiModels.Version, datasetApiSdk.ResponseHeaders, error) {
 //				panic("mock out the GetVersionWithHeaders method")
 //			},
-//			GetVersionsInBatchesFunc: func(ctx context.Context, userAuthToken string, serviceAuthToken string, downloadServiceAuthToken string, collectionID string, datasetID string, edition string, batchSize int, maxWorkers int) (datasetclient.VersionsList, error) {
+//			GetVersionsInBatchesFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, batchSize int, maxWorkers int) (datasetApiSdk.VersionsList, error) {
 //				panic("mock out the GetVersionsInBatches method")
 //			},
-//			PutDatasetFunc: func(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, datasetID string, d datasetclient.DatasetDetails) error {
+//			PutDatasetFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, d dpDatasetApiModels.Dataset) error {
 //				panic("mock out the PutDataset method")
 //			},
-//			PutInstanceFunc: func(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, instanceID string, i datasetclient.UpdateInstance, ifMatch string) (string, error) {
+//			PutInstanceFunc: func(ctx context.Context, headers datasetApiSdk.Headers, instanceID string, i datasetApiSdk.UpdateInstance, ifMatch string) (string, error) {
 //				panic("mock out the PutInstance method")
 //			},
-//			PutMetadataFunc: func(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, datasetID string, edition string, version string, metadata datasetclient.EditableMetadata, versionEtag string) error {
+//			PutMetadataFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, version string, metadata dpDatasetApiModels.EditableMetadata, versionEtag string) error {
 //				panic("mock out the PutMetadata method")
 //			},
-//			PutVersionFunc: func(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, datasetID string, edition string, version string, v datasetclient.Version) error {
+//			PutVersionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, editionID string, versionID string, version dpDatasetApiModels.Version) (dpDatasetApiModels.Version, error) {
 //				panic("mock out the PutVersion method")
 //			},
 //		}
 //
-//		// use mockedDatasetClient in code that requires DatasetClient
+//		// use mockedDatasetAPIClient in code that requires DatasetAPIClient
 //		// and then make assertions.
 //
 //	}
-type DatasetClientMock struct {
-	// GetFunc mocks the Get method.
-	GetFunc func(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, datasetID string) (datasetclient.DatasetDetails, error)
-
+type DatasetAPIClientMock struct {
 	// GetDatasetCurrentAndNextFunc mocks the GetDatasetCurrentAndNext method.
-	GetDatasetCurrentAndNextFunc func(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, datasetID string) (datasetclient.Dataset, error)
+	GetDatasetCurrentAndNextFunc func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string) (dpDatasetApiModels.DatasetUpdate, error)
 
 	// GetDatasetsInBatchesFunc mocks the GetDatasetsInBatches method.
-	GetDatasetsInBatchesFunc func(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, batchSize int, maxWorkers int) (datasetclient.List, error)
+	GetDatasetsInBatchesFunc func(ctx context.Context, headers datasetApiSdk.Headers, batchSize int, maxWorkers int) (datasetApiSdk.DatasetsList, error)
 
 	// GetEditionFunc mocks the GetEdition method.
-	GetEditionFunc func(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, datasetID string, edition string) (datasetclient.Edition, error)
+	GetEditionFunc func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string) (dpDatasetApiModels.Edition, error)
 
 	// GetEditionsFunc mocks the GetEditions method.
-	GetEditionsFunc func(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, datasetID string) ([]datasetclient.Edition, error)
-
-	// GetInstanceFunc mocks the GetInstance method.
-	GetInstanceFunc func(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, instanceID string, ifMatch string) (datasetclient.Instance, string, error)
+	GetEditionsFunc func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, q *datasetApiSdk.QueryParams) (datasetApiSdk.EditionsList, error)
 
 	// GetVersionFunc mocks the GetVersion method.
-	GetVersionFunc func(ctx context.Context, userAuthToken string, serviceAuthToken string, downloadServiceAuthToken string, collectionID string, datasetID string, edition string, version string) (datasetclient.Version, error)
+	GetVersionFunc func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, version string) (dpDatasetApiModels.Version, error)
 
 	// GetVersionWithHeadersFunc mocks the GetVersionWithHeaders method.
-	GetVersionWithHeadersFunc func(ctx context.Context, userAuthToken string, serviceAuthToken string, downloadServiceAuthToken string, collectionID string, datasetID string, edition string, version string) (datasetclient.Version, datasetclient.ResponseHeaders, error)
+	GetVersionWithHeadersFunc func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, version string) (dpDatasetApiModels.Version, datasetApiSdk.ResponseHeaders, error)
 
 	// GetVersionsInBatchesFunc mocks the GetVersionsInBatches method.
-	GetVersionsInBatchesFunc func(ctx context.Context, userAuthToken string, serviceAuthToken string, downloadServiceAuthToken string, collectionID string, datasetID string, edition string, batchSize int, maxWorkers int) (datasetclient.VersionsList, error)
+	GetVersionsInBatchesFunc func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, batchSize int, maxWorkers int) (datasetApiSdk.VersionsList, error)
 
 	// PutDatasetFunc mocks the PutDataset method.
-	PutDatasetFunc func(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, datasetID string, d datasetclient.DatasetDetails) error
+	PutDatasetFunc func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, d dpDatasetApiModels.Dataset) error
 
 	// PutInstanceFunc mocks the PutInstance method.
-	PutInstanceFunc func(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, instanceID string, i datasetclient.UpdateInstance, ifMatch string) (string, error)
+	PutInstanceFunc func(ctx context.Context, headers datasetApiSdk.Headers, instanceID string, i datasetApiSdk.UpdateInstance, ifMatch string) (string, error)
 
 	// PutMetadataFunc mocks the PutMetadata method.
-	PutMetadataFunc func(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, datasetID string, edition string, version string, metadata datasetclient.EditableMetadata, versionEtag string) error
+	PutMetadataFunc func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, version string, metadata dpDatasetApiModels.EditableMetadata, versionEtag string) error
 
 	// PutVersionFunc mocks the PutVersion method.
-	PutVersionFunc func(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, datasetID string, edition string, version string, v datasetclient.Version) error
+	PutVersionFunc func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, editionID string, versionID string, version dpDatasetApiModels.Version) (dpDatasetApiModels.Version, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
-		// Get holds details about calls to the Get method.
-		Get []struct {
-			// Ctx is the ctx argument value.
-			Ctx context.Context
-			// UserAuthToken is the userAuthToken argument value.
-			UserAuthToken string
-			// ServiceAuthToken is the serviceAuthToken argument value.
-			ServiceAuthToken string
-			// CollectionID is the collectionID argument value.
-			CollectionID string
-			// DatasetID is the datasetID argument value.
-			DatasetID string
-		}
 		// GetDatasetCurrentAndNext holds details about calls to the GetDatasetCurrentAndNext method.
 		GetDatasetCurrentAndNext []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
-			// UserAuthToken is the userAuthToken argument value.
-			UserAuthToken string
-			// ServiceAuthToken is the serviceAuthToken argument value.
-			ServiceAuthToken string
-			// CollectionID is the collectionID argument value.
-			CollectionID string
+			// Headers is the headers argument value.
+			Headers datasetApiSdk.Headers
 			// DatasetID is the datasetID argument value.
 			DatasetID string
 		}
@@ -138,12 +110,8 @@ type DatasetClientMock struct {
 		GetDatasetsInBatches []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
-			// UserAuthToken is the userAuthToken argument value.
-			UserAuthToken string
-			// ServiceAuthToken is the serviceAuthToken argument value.
-			ServiceAuthToken string
-			// CollectionID is the collectionID argument value.
-			CollectionID string
+			// Headers is the headers argument value.
+			Headers datasetApiSdk.Headers
 			// BatchSize is the batchSize argument value.
 			BatchSize int
 			// MaxWorkers is the maxWorkers argument value.
@@ -153,12 +121,8 @@ type DatasetClientMock struct {
 		GetEdition []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
-			// UserAuthToken is the userAuthToken argument value.
-			UserAuthToken string
-			// ServiceAuthToken is the serviceAuthToken argument value.
-			ServiceAuthToken string
-			// CollectionID is the collectionID argument value.
-			CollectionID string
+			// Headers is the headers argument value.
+			Headers datasetApiSdk.Headers
 			// DatasetID is the datasetID argument value.
 			DatasetID string
 			// Edition is the edition argument value.
@@ -168,42 +132,19 @@ type DatasetClientMock struct {
 		GetEditions []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
-			// UserAuthToken is the userAuthToken argument value.
-			UserAuthToken string
-			// ServiceAuthToken is the serviceAuthToken argument value.
-			ServiceAuthToken string
-			// CollectionID is the collectionID argument value.
-			CollectionID string
+			// Headers is the headers argument value.
+			Headers datasetApiSdk.Headers
 			// DatasetID is the datasetID argument value.
 			DatasetID string
-		}
-		// GetInstance holds details about calls to the GetInstance method.
-		GetInstance []struct {
-			// Ctx is the ctx argument value.
-			Ctx context.Context
-			// UserAuthToken is the userAuthToken argument value.
-			UserAuthToken string
-			// ServiceAuthToken is the serviceAuthToken argument value.
-			ServiceAuthToken string
-			// CollectionID is the collectionID argument value.
-			CollectionID string
-			// InstanceID is the instanceID argument value.
-			InstanceID string
-			// IfMatch is the ifMatch argument value.
-			IfMatch string
+			// Q is the q argument value.
+			Q *datasetApiSdk.QueryParams
 		}
 		// GetVersion holds details about calls to the GetVersion method.
 		GetVersion []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
-			// UserAuthToken is the userAuthToken argument value.
-			UserAuthToken string
-			// ServiceAuthToken is the serviceAuthToken argument value.
-			ServiceAuthToken string
-			// DownloadServiceAuthToken is the downloadServiceAuthToken argument value.
-			DownloadServiceAuthToken string
-			// CollectionID is the collectionID argument value.
-			CollectionID string
+			// Headers is the headers argument value.
+			Headers datasetApiSdk.Headers
 			// DatasetID is the datasetID argument value.
 			DatasetID string
 			// Edition is the edition argument value.
@@ -215,14 +156,8 @@ type DatasetClientMock struct {
 		GetVersionWithHeaders []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
-			// UserAuthToken is the userAuthToken argument value.
-			UserAuthToken string
-			// ServiceAuthToken is the serviceAuthToken argument value.
-			ServiceAuthToken string
-			// DownloadServiceAuthToken is the downloadServiceAuthToken argument value.
-			DownloadServiceAuthToken string
-			// CollectionID is the collectionID argument value.
-			CollectionID string
+			// Headers is the headers argument value.
+			Headers datasetApiSdk.Headers
 			// DatasetID is the datasetID argument value.
 			DatasetID string
 			// Edition is the edition argument value.
@@ -234,14 +169,8 @@ type DatasetClientMock struct {
 		GetVersionsInBatches []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
-			// UserAuthToken is the userAuthToken argument value.
-			UserAuthToken string
-			// ServiceAuthToken is the serviceAuthToken argument value.
-			ServiceAuthToken string
-			// DownloadServiceAuthToken is the downloadServiceAuthToken argument value.
-			DownloadServiceAuthToken string
-			// CollectionID is the collectionID argument value.
-			CollectionID string
+			// Headers is the headers argument value.
+			Headers datasetApiSdk.Headers
 			// DatasetID is the datasetID argument value.
 			DatasetID string
 			// Edition is the edition argument value.
@@ -255,31 +184,23 @@ type DatasetClientMock struct {
 		PutDataset []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
-			// UserAuthToken is the userAuthToken argument value.
-			UserAuthToken string
-			// ServiceAuthToken is the serviceAuthToken argument value.
-			ServiceAuthToken string
-			// CollectionID is the collectionID argument value.
-			CollectionID string
+			// Headers is the headers argument value.
+			Headers datasetApiSdk.Headers
 			// DatasetID is the datasetID argument value.
 			DatasetID string
 			// D is the d argument value.
-			D datasetclient.DatasetDetails
+			D dpDatasetApiModels.Dataset
 		}
 		// PutInstance holds details about calls to the PutInstance method.
 		PutInstance []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
-			// UserAuthToken is the userAuthToken argument value.
-			UserAuthToken string
-			// ServiceAuthToken is the serviceAuthToken argument value.
-			ServiceAuthToken string
-			// CollectionID is the collectionID argument value.
-			CollectionID string
+			// Headers is the headers argument value.
+			Headers datasetApiSdk.Headers
 			// InstanceID is the instanceID argument value.
 			InstanceID string
 			// I is the i argument value.
-			I datasetclient.UpdateInstance
+			I datasetApiSdk.UpdateInstance
 			// IfMatch is the ifMatch argument value.
 			IfMatch string
 		}
@@ -287,12 +208,8 @@ type DatasetClientMock struct {
 		PutMetadata []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
-			// UserAuthToken is the userAuthToken argument value.
-			UserAuthToken string
-			// ServiceAuthToken is the serviceAuthToken argument value.
-			ServiceAuthToken string
-			// CollectionID is the collectionID argument value.
-			CollectionID string
+			// Headers is the headers argument value.
+			Headers datasetApiSdk.Headers
 			// DatasetID is the datasetID argument value.
 			DatasetID string
 			// Edition is the edition argument value.
@@ -300,7 +217,7 @@ type DatasetClientMock struct {
 			// Version is the version argument value.
 			Version string
 			// Metadata is the metadata argument value.
-			Metadata datasetclient.EditableMetadata
+			Metadata dpDatasetApiModels.EditableMetadata
 			// VersionEtag is the versionEtag argument value.
 			VersionEtag string
 		}
@@ -308,28 +225,22 @@ type DatasetClientMock struct {
 		PutVersion []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
-			// UserAuthToken is the userAuthToken argument value.
-			UserAuthToken string
-			// ServiceAuthToken is the serviceAuthToken argument value.
-			ServiceAuthToken string
-			// CollectionID is the collectionID argument value.
-			CollectionID string
+			// Headers is the headers argument value.
+			Headers datasetApiSdk.Headers
 			// DatasetID is the datasetID argument value.
 			DatasetID string
-			// Edition is the edition argument value.
-			Edition string
+			// EditionID is the editionID argument value.
+			EditionID string
+			// VersionID is the versionID argument value.
+			VersionID string
 			// Version is the version argument value.
-			Version string
-			// V is the v argument value.
-			V datasetclient.Version
+			Version dpDatasetApiModels.Version
 		}
 	}
-	lockGet                      sync.RWMutex
 	lockGetDatasetCurrentAndNext sync.RWMutex
 	lockGetDatasetsInBatches     sync.RWMutex
 	lockGetEdition               sync.RWMutex
 	lockGetEditions              sync.RWMutex
-	lockGetInstance              sync.RWMutex
 	lockGetVersion               sync.RWMutex
 	lockGetVersionWithHeaders    sync.RWMutex
 	lockGetVersionsInBatches     sync.RWMutex
@@ -339,95 +250,39 @@ type DatasetClientMock struct {
 	lockPutVersion               sync.RWMutex
 }
 
-// Get calls GetFunc.
-func (mock *DatasetClientMock) Get(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, datasetID string) (datasetclient.DatasetDetails, error) {
-	if mock.GetFunc == nil {
-		panic("DatasetClientMock.GetFunc: method is nil but DatasetClient.Get was just called")
-	}
-	callInfo := struct {
-		Ctx              context.Context
-		UserAuthToken    string
-		ServiceAuthToken string
-		CollectionID     string
-		DatasetID        string
-	}{
-		Ctx:              ctx,
-		UserAuthToken:    userAuthToken,
-		ServiceAuthToken: serviceAuthToken,
-		CollectionID:     collectionID,
-		DatasetID:        datasetID,
-	}
-	mock.lockGet.Lock()
-	mock.calls.Get = append(mock.calls.Get, callInfo)
-	mock.lockGet.Unlock()
-	return mock.GetFunc(ctx, userAuthToken, serviceAuthToken, collectionID, datasetID)
-}
-
-// GetCalls gets all the calls that were made to Get.
-// Check the length with:
-//
-//	len(mockedDatasetClient.GetCalls())
-func (mock *DatasetClientMock) GetCalls() []struct {
-	Ctx              context.Context
-	UserAuthToken    string
-	ServiceAuthToken string
-	CollectionID     string
-	DatasetID        string
-} {
-	var calls []struct {
-		Ctx              context.Context
-		UserAuthToken    string
-		ServiceAuthToken string
-		CollectionID     string
-		DatasetID        string
-	}
-	mock.lockGet.RLock()
-	calls = mock.calls.Get
-	mock.lockGet.RUnlock()
-	return calls
-}
-
 // GetDatasetCurrentAndNext calls GetDatasetCurrentAndNextFunc.
-func (mock *DatasetClientMock) GetDatasetCurrentAndNext(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, datasetID string) (datasetclient.Dataset, error) {
+func (mock *DatasetAPIClientMock) GetDatasetCurrentAndNext(ctx context.Context, headers datasetApiSdk.Headers, datasetID string) (dpDatasetApiModels.DatasetUpdate, error) {
 	if mock.GetDatasetCurrentAndNextFunc == nil {
-		panic("DatasetClientMock.GetDatasetCurrentAndNextFunc: method is nil but DatasetClient.GetDatasetCurrentAndNext was just called")
+		panic("DatasetAPIClientMock.GetDatasetCurrentAndNextFunc: method is nil but DatasetAPIClient.GetDatasetCurrentAndNext was just called")
 	}
 	callInfo := struct {
-		Ctx              context.Context
-		UserAuthToken    string
-		ServiceAuthToken string
-		CollectionID     string
-		DatasetID        string
+		Ctx       context.Context
+		Headers   datasetApiSdk.Headers
+		DatasetID string
 	}{
-		Ctx:              ctx,
-		UserAuthToken:    userAuthToken,
-		ServiceAuthToken: serviceAuthToken,
-		CollectionID:     collectionID,
-		DatasetID:        datasetID,
+		Ctx:       ctx,
+		Headers:   headers,
+		DatasetID: datasetID,
 	}
 	mock.lockGetDatasetCurrentAndNext.Lock()
 	mock.calls.GetDatasetCurrentAndNext = append(mock.calls.GetDatasetCurrentAndNext, callInfo)
 	mock.lockGetDatasetCurrentAndNext.Unlock()
-	return mock.GetDatasetCurrentAndNextFunc(ctx, userAuthToken, serviceAuthToken, collectionID, datasetID)
+	return mock.GetDatasetCurrentAndNextFunc(ctx, headers, datasetID)
 }
 
 // GetDatasetCurrentAndNextCalls gets all the calls that were made to GetDatasetCurrentAndNext.
 // Check the length with:
 //
-//	len(mockedDatasetClient.GetDatasetCurrentAndNextCalls())
-func (mock *DatasetClientMock) GetDatasetCurrentAndNextCalls() []struct {
-	Ctx              context.Context
-	UserAuthToken    string
-	ServiceAuthToken string
-	CollectionID     string
-	DatasetID        string
+//	len(mockedDatasetAPIClient.GetDatasetCurrentAndNextCalls())
+func (mock *DatasetAPIClientMock) GetDatasetCurrentAndNextCalls() []struct {
+	Ctx       context.Context
+	Headers   datasetApiSdk.Headers
+	DatasetID string
 } {
 	var calls []struct {
-		Ctx              context.Context
-		UserAuthToken    string
-		ServiceAuthToken string
-		CollectionID     string
-		DatasetID        string
+		Ctx       context.Context
+		Headers   datasetApiSdk.Headers
+		DatasetID string
 	}
 	mock.lockGetDatasetCurrentAndNext.RLock()
 	calls = mock.calls.GetDatasetCurrentAndNext
@@ -436,50 +291,42 @@ func (mock *DatasetClientMock) GetDatasetCurrentAndNextCalls() []struct {
 }
 
 // GetDatasetsInBatches calls GetDatasetsInBatchesFunc.
-func (mock *DatasetClientMock) GetDatasetsInBatches(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, batchSize int, maxWorkers int) (datasetclient.List, error) {
+func (mock *DatasetAPIClientMock) GetDatasetsInBatches(ctx context.Context, headers datasetApiSdk.Headers, batchSize int, maxWorkers int) (datasetApiSdk.DatasetsList, error) {
 	if mock.GetDatasetsInBatchesFunc == nil {
-		panic("DatasetClientMock.GetDatasetsInBatchesFunc: method is nil but DatasetClient.GetDatasetsInBatches was just called")
+		panic("DatasetAPIClientMock.GetDatasetsInBatchesFunc: method is nil but DatasetAPIClient.GetDatasetsInBatches was just called")
 	}
 	callInfo := struct {
-		Ctx              context.Context
-		UserAuthToken    string
-		ServiceAuthToken string
-		CollectionID     string
-		BatchSize        int
-		MaxWorkers       int
+		Ctx        context.Context
+		Headers    datasetApiSdk.Headers
+		BatchSize  int
+		MaxWorkers int
 	}{
-		Ctx:              ctx,
-		UserAuthToken:    userAuthToken,
-		ServiceAuthToken: serviceAuthToken,
-		CollectionID:     collectionID,
-		BatchSize:        batchSize,
-		MaxWorkers:       maxWorkers,
+		Ctx:        ctx,
+		Headers:    headers,
+		BatchSize:  batchSize,
+		MaxWorkers: maxWorkers,
 	}
 	mock.lockGetDatasetsInBatches.Lock()
 	mock.calls.GetDatasetsInBatches = append(mock.calls.GetDatasetsInBatches, callInfo)
 	mock.lockGetDatasetsInBatches.Unlock()
-	return mock.GetDatasetsInBatchesFunc(ctx, userAuthToken, serviceAuthToken, collectionID, batchSize, maxWorkers)
+	return mock.GetDatasetsInBatchesFunc(ctx, headers, batchSize, maxWorkers)
 }
 
 // GetDatasetsInBatchesCalls gets all the calls that were made to GetDatasetsInBatches.
 // Check the length with:
 //
-//	len(mockedDatasetClient.GetDatasetsInBatchesCalls())
-func (mock *DatasetClientMock) GetDatasetsInBatchesCalls() []struct {
-	Ctx              context.Context
-	UserAuthToken    string
-	ServiceAuthToken string
-	CollectionID     string
-	BatchSize        int
-	MaxWorkers       int
+//	len(mockedDatasetAPIClient.GetDatasetsInBatchesCalls())
+func (mock *DatasetAPIClientMock) GetDatasetsInBatchesCalls() []struct {
+	Ctx        context.Context
+	Headers    datasetApiSdk.Headers
+	BatchSize  int
+	MaxWorkers int
 } {
 	var calls []struct {
-		Ctx              context.Context
-		UserAuthToken    string
-		ServiceAuthToken string
-		CollectionID     string
-		BatchSize        int
-		MaxWorkers       int
+		Ctx        context.Context
+		Headers    datasetApiSdk.Headers
+		BatchSize  int
+		MaxWorkers int
 	}
 	mock.lockGetDatasetsInBatches.RLock()
 	calls = mock.calls.GetDatasetsInBatches
@@ -488,50 +335,42 @@ func (mock *DatasetClientMock) GetDatasetsInBatchesCalls() []struct {
 }
 
 // GetEdition calls GetEditionFunc.
-func (mock *DatasetClientMock) GetEdition(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, datasetID string, edition string) (datasetclient.Edition, error) {
+func (mock *DatasetAPIClientMock) GetEdition(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string) (dpDatasetApiModels.Edition, error) {
 	if mock.GetEditionFunc == nil {
-		panic("DatasetClientMock.GetEditionFunc: method is nil but DatasetClient.GetEdition was just called")
+		panic("DatasetAPIClientMock.GetEditionFunc: method is nil but DatasetAPIClient.GetEdition was just called")
 	}
 	callInfo := struct {
-		Ctx              context.Context
-		UserAuthToken    string
-		ServiceAuthToken string
-		CollectionID     string
-		DatasetID        string
-		Edition          string
+		Ctx       context.Context
+		Headers   datasetApiSdk.Headers
+		DatasetID string
+		Edition   string
 	}{
-		Ctx:              ctx,
-		UserAuthToken:    userAuthToken,
-		ServiceAuthToken: serviceAuthToken,
-		CollectionID:     collectionID,
-		DatasetID:        datasetID,
-		Edition:          edition,
+		Ctx:       ctx,
+		Headers:   headers,
+		DatasetID: datasetID,
+		Edition:   edition,
 	}
 	mock.lockGetEdition.Lock()
 	mock.calls.GetEdition = append(mock.calls.GetEdition, callInfo)
 	mock.lockGetEdition.Unlock()
-	return mock.GetEditionFunc(ctx, userAuthToken, serviceAuthToken, collectionID, datasetID, edition)
+	return mock.GetEditionFunc(ctx, headers, datasetID, edition)
 }
 
 // GetEditionCalls gets all the calls that were made to GetEdition.
 // Check the length with:
 //
-//	len(mockedDatasetClient.GetEditionCalls())
-func (mock *DatasetClientMock) GetEditionCalls() []struct {
-	Ctx              context.Context
-	UserAuthToken    string
-	ServiceAuthToken string
-	CollectionID     string
-	DatasetID        string
-	Edition          string
+//	len(mockedDatasetAPIClient.GetEditionCalls())
+func (mock *DatasetAPIClientMock) GetEditionCalls() []struct {
+	Ctx       context.Context
+	Headers   datasetApiSdk.Headers
+	DatasetID string
+	Edition   string
 } {
 	var calls []struct {
-		Ctx              context.Context
-		UserAuthToken    string
-		ServiceAuthToken string
-		CollectionID     string
-		DatasetID        string
-		Edition          string
+		Ctx       context.Context
+		Headers   datasetApiSdk.Headers
+		DatasetID string
+		Edition   string
 	}
 	mock.lockGetEdition.RLock()
 	calls = mock.calls.GetEdition
@@ -540,46 +379,42 @@ func (mock *DatasetClientMock) GetEditionCalls() []struct {
 }
 
 // GetEditions calls GetEditionsFunc.
-func (mock *DatasetClientMock) GetEditions(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, datasetID string) ([]datasetclient.Edition, error) {
+func (mock *DatasetAPIClientMock) GetEditions(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, q *datasetApiSdk.QueryParams) (datasetApiSdk.EditionsList, error) {
 	if mock.GetEditionsFunc == nil {
-		panic("DatasetClientMock.GetEditionsFunc: method is nil but DatasetClient.GetEditions was just called")
+		panic("DatasetAPIClientMock.GetEditionsFunc: method is nil but DatasetAPIClient.GetEditions was just called")
 	}
 	callInfo := struct {
-		Ctx              context.Context
-		UserAuthToken    string
-		ServiceAuthToken string
-		CollectionID     string
-		DatasetID        string
+		Ctx       context.Context
+		Headers   datasetApiSdk.Headers
+		DatasetID string
+		Q         *datasetApiSdk.QueryParams
 	}{
-		Ctx:              ctx,
-		UserAuthToken:    userAuthToken,
-		ServiceAuthToken: serviceAuthToken,
-		CollectionID:     collectionID,
-		DatasetID:        datasetID,
+		Ctx:       ctx,
+		Headers:   headers,
+		DatasetID: datasetID,
+		Q:         q,
 	}
 	mock.lockGetEditions.Lock()
 	mock.calls.GetEditions = append(mock.calls.GetEditions, callInfo)
 	mock.lockGetEditions.Unlock()
-	return mock.GetEditionsFunc(ctx, userAuthToken, serviceAuthToken, collectionID, datasetID)
+	return mock.GetEditionsFunc(ctx, headers, datasetID, q)
 }
 
 // GetEditionsCalls gets all the calls that were made to GetEditions.
 // Check the length with:
 //
-//	len(mockedDatasetClient.GetEditionsCalls())
-func (mock *DatasetClientMock) GetEditionsCalls() []struct {
-	Ctx              context.Context
-	UserAuthToken    string
-	ServiceAuthToken string
-	CollectionID     string
-	DatasetID        string
+//	len(mockedDatasetAPIClient.GetEditionsCalls())
+func (mock *DatasetAPIClientMock) GetEditionsCalls() []struct {
+	Ctx       context.Context
+	Headers   datasetApiSdk.Headers
+	DatasetID string
+	Q         *datasetApiSdk.QueryParams
 } {
 	var calls []struct {
-		Ctx              context.Context
-		UserAuthToken    string
-		ServiceAuthToken string
-		CollectionID     string
-		DatasetID        string
+		Ctx       context.Context
+		Headers   datasetApiSdk.Headers
+		DatasetID string
+		Q         *datasetApiSdk.QueryParams
 	}
 	mock.lockGetEditions.RLock()
 	calls = mock.calls.GetEditions
@@ -587,111 +422,47 @@ func (mock *DatasetClientMock) GetEditionsCalls() []struct {
 	return calls
 }
 
-// GetInstance calls GetInstanceFunc.
-func (mock *DatasetClientMock) GetInstance(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, instanceID string, ifMatch string) (datasetclient.Instance, string, error) {
-	if mock.GetInstanceFunc == nil {
-		panic("DatasetClientMock.GetInstanceFunc: method is nil but DatasetClient.GetInstance was just called")
-	}
-	callInfo := struct {
-		Ctx              context.Context
-		UserAuthToken    string
-		ServiceAuthToken string
-		CollectionID     string
-		InstanceID       string
-		IfMatch          string
-	}{
-		Ctx:              ctx,
-		UserAuthToken:    userAuthToken,
-		ServiceAuthToken: serviceAuthToken,
-		CollectionID:     collectionID,
-		InstanceID:       instanceID,
-		IfMatch:          ifMatch,
-	}
-	mock.lockGetInstance.Lock()
-	mock.calls.GetInstance = append(mock.calls.GetInstance, callInfo)
-	mock.lockGetInstance.Unlock()
-	return mock.GetInstanceFunc(ctx, userAuthToken, serviceAuthToken, collectionID, instanceID, ifMatch)
-}
-
-// GetInstanceCalls gets all the calls that were made to GetInstance.
-// Check the length with:
-//
-//	len(mockedDatasetClient.GetInstanceCalls())
-func (mock *DatasetClientMock) GetInstanceCalls() []struct {
-	Ctx              context.Context
-	UserAuthToken    string
-	ServiceAuthToken string
-	CollectionID     string
-	InstanceID       string
-	IfMatch          string
-} {
-	var calls []struct {
-		Ctx              context.Context
-		UserAuthToken    string
-		ServiceAuthToken string
-		CollectionID     string
-		InstanceID       string
-		IfMatch          string
-	}
-	mock.lockGetInstance.RLock()
-	calls = mock.calls.GetInstance
-	mock.lockGetInstance.RUnlock()
-	return calls
-}
-
 // GetVersion calls GetVersionFunc.
-func (mock *DatasetClientMock) GetVersion(ctx context.Context, userAuthToken string, serviceAuthToken string, downloadServiceAuthToken string, collectionID string, datasetID string, edition string, version string) (datasetclient.Version, error) {
+func (mock *DatasetAPIClientMock) GetVersion(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, version string) (dpDatasetApiModels.Version, error) {
 	if mock.GetVersionFunc == nil {
-		panic("DatasetClientMock.GetVersionFunc: method is nil but DatasetClient.GetVersion was just called")
+		panic("DatasetAPIClientMock.GetVersionFunc: method is nil but DatasetAPIClient.GetVersion was just called")
 	}
 	callInfo := struct {
-		Ctx                      context.Context
-		UserAuthToken            string
-		ServiceAuthToken         string
-		DownloadServiceAuthToken string
-		CollectionID             string
-		DatasetID                string
-		Edition                  string
-		Version                  string
+		Ctx       context.Context
+		Headers   datasetApiSdk.Headers
+		DatasetID string
+		Edition   string
+		Version   string
 	}{
-		Ctx:                      ctx,
-		UserAuthToken:            userAuthToken,
-		ServiceAuthToken:         serviceAuthToken,
-		DownloadServiceAuthToken: downloadServiceAuthToken,
-		CollectionID:             collectionID,
-		DatasetID:                datasetID,
-		Edition:                  edition,
-		Version:                  version,
+		Ctx:       ctx,
+		Headers:   headers,
+		DatasetID: datasetID,
+		Edition:   edition,
+		Version:   version,
 	}
 	mock.lockGetVersion.Lock()
 	mock.calls.GetVersion = append(mock.calls.GetVersion, callInfo)
 	mock.lockGetVersion.Unlock()
-	return mock.GetVersionFunc(ctx, userAuthToken, serviceAuthToken, downloadServiceAuthToken, collectionID, datasetID, edition, version)
+	return mock.GetVersionFunc(ctx, headers, datasetID, edition, version)
 }
 
 // GetVersionCalls gets all the calls that were made to GetVersion.
 // Check the length with:
 //
-//	len(mockedDatasetClient.GetVersionCalls())
-func (mock *DatasetClientMock) GetVersionCalls() []struct {
-	Ctx                      context.Context
-	UserAuthToken            string
-	ServiceAuthToken         string
-	DownloadServiceAuthToken string
-	CollectionID             string
-	DatasetID                string
-	Edition                  string
-	Version                  string
+//	len(mockedDatasetAPIClient.GetVersionCalls())
+func (mock *DatasetAPIClientMock) GetVersionCalls() []struct {
+	Ctx       context.Context
+	Headers   datasetApiSdk.Headers
+	DatasetID string
+	Edition   string
+	Version   string
 } {
 	var calls []struct {
-		Ctx                      context.Context
-		UserAuthToken            string
-		ServiceAuthToken         string
-		DownloadServiceAuthToken string
-		CollectionID             string
-		DatasetID                string
-		Edition                  string
-		Version                  string
+		Ctx       context.Context
+		Headers   datasetApiSdk.Headers
+		DatasetID string
+		Edition   string
+		Version   string
 	}
 	mock.lockGetVersion.RLock()
 	calls = mock.calls.GetVersion
@@ -700,58 +471,46 @@ func (mock *DatasetClientMock) GetVersionCalls() []struct {
 }
 
 // GetVersionWithHeaders calls GetVersionWithHeadersFunc.
-func (mock *DatasetClientMock) GetVersionWithHeaders(ctx context.Context, userAuthToken string, serviceAuthToken string, downloadServiceAuthToken string, collectionID string, datasetID string, edition string, version string) (datasetclient.Version, datasetclient.ResponseHeaders, error) {
+func (mock *DatasetAPIClientMock) GetVersionWithHeaders(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, version string) (dpDatasetApiModels.Version, datasetApiSdk.ResponseHeaders, error) {
 	if mock.GetVersionWithHeadersFunc == nil {
-		panic("DatasetClientMock.GetVersionWithHeadersFunc: method is nil but DatasetClient.GetVersionWithHeaders was just called")
+		panic("DatasetAPIClientMock.GetVersionWithHeadersFunc: method is nil but DatasetAPIClient.GetVersionWithHeaders was just called")
 	}
 	callInfo := struct {
-		Ctx                      context.Context
-		UserAuthToken            string
-		ServiceAuthToken         string
-		DownloadServiceAuthToken string
-		CollectionID             string
-		DatasetID                string
-		Edition                  string
-		Version                  string
+		Ctx       context.Context
+		Headers   datasetApiSdk.Headers
+		DatasetID string
+		Edition   string
+		Version   string
 	}{
-		Ctx:                      ctx,
-		UserAuthToken:            userAuthToken,
-		ServiceAuthToken:         serviceAuthToken,
-		DownloadServiceAuthToken: downloadServiceAuthToken,
-		CollectionID:             collectionID,
-		DatasetID:                datasetID,
-		Edition:                  edition,
-		Version:                  version,
+		Ctx:       ctx,
+		Headers:   headers,
+		DatasetID: datasetID,
+		Edition:   edition,
+		Version:   version,
 	}
 	mock.lockGetVersionWithHeaders.Lock()
 	mock.calls.GetVersionWithHeaders = append(mock.calls.GetVersionWithHeaders, callInfo)
 	mock.lockGetVersionWithHeaders.Unlock()
-	return mock.GetVersionWithHeadersFunc(ctx, userAuthToken, serviceAuthToken, downloadServiceAuthToken, collectionID, datasetID, edition, version)
+	return mock.GetVersionWithHeadersFunc(ctx, headers, datasetID, edition, version)
 }
 
 // GetVersionWithHeadersCalls gets all the calls that were made to GetVersionWithHeaders.
 // Check the length with:
 //
-//	len(mockedDatasetClient.GetVersionWithHeadersCalls())
-func (mock *DatasetClientMock) GetVersionWithHeadersCalls() []struct {
-	Ctx                      context.Context
-	UserAuthToken            string
-	ServiceAuthToken         string
-	DownloadServiceAuthToken string
-	CollectionID             string
-	DatasetID                string
-	Edition                  string
-	Version                  string
+//	len(mockedDatasetAPIClient.GetVersionWithHeadersCalls())
+func (mock *DatasetAPIClientMock) GetVersionWithHeadersCalls() []struct {
+	Ctx       context.Context
+	Headers   datasetApiSdk.Headers
+	DatasetID string
+	Edition   string
+	Version   string
 } {
 	var calls []struct {
-		Ctx                      context.Context
-		UserAuthToken            string
-		ServiceAuthToken         string
-		DownloadServiceAuthToken string
-		CollectionID             string
-		DatasetID                string
-		Edition                  string
-		Version                  string
+		Ctx       context.Context
+		Headers   datasetApiSdk.Headers
+		DatasetID string
+		Edition   string
+		Version   string
 	}
 	mock.lockGetVersionWithHeaders.RLock()
 	calls = mock.calls.GetVersionWithHeaders
@@ -760,62 +519,50 @@ func (mock *DatasetClientMock) GetVersionWithHeadersCalls() []struct {
 }
 
 // GetVersionsInBatches calls GetVersionsInBatchesFunc.
-func (mock *DatasetClientMock) GetVersionsInBatches(ctx context.Context, userAuthToken string, serviceAuthToken string, downloadServiceAuthToken string, collectionID string, datasetID string, edition string, batchSize int, maxWorkers int) (datasetclient.VersionsList, error) {
+func (mock *DatasetAPIClientMock) GetVersionsInBatches(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, batchSize int, maxWorkers int) (datasetApiSdk.VersionsList, error) {
 	if mock.GetVersionsInBatchesFunc == nil {
-		panic("DatasetClientMock.GetVersionsInBatchesFunc: method is nil but DatasetClient.GetVersionsInBatches was just called")
+		panic("DatasetAPIClientMock.GetVersionsInBatchesFunc: method is nil but DatasetAPIClient.GetVersionsInBatches was just called")
 	}
 	callInfo := struct {
-		Ctx                      context.Context
-		UserAuthToken            string
-		ServiceAuthToken         string
-		DownloadServiceAuthToken string
-		CollectionID             string
-		DatasetID                string
-		Edition                  string
-		BatchSize                int
-		MaxWorkers               int
+		Ctx        context.Context
+		Headers    datasetApiSdk.Headers
+		DatasetID  string
+		Edition    string
+		BatchSize  int
+		MaxWorkers int
 	}{
-		Ctx:                      ctx,
-		UserAuthToken:            userAuthToken,
-		ServiceAuthToken:         serviceAuthToken,
-		DownloadServiceAuthToken: downloadServiceAuthToken,
-		CollectionID:             collectionID,
-		DatasetID:                datasetID,
-		Edition:                  edition,
-		BatchSize:                batchSize,
-		MaxWorkers:               maxWorkers,
+		Ctx:        ctx,
+		Headers:    headers,
+		DatasetID:  datasetID,
+		Edition:    edition,
+		BatchSize:  batchSize,
+		MaxWorkers: maxWorkers,
 	}
 	mock.lockGetVersionsInBatches.Lock()
 	mock.calls.GetVersionsInBatches = append(mock.calls.GetVersionsInBatches, callInfo)
 	mock.lockGetVersionsInBatches.Unlock()
-	return mock.GetVersionsInBatchesFunc(ctx, userAuthToken, serviceAuthToken, downloadServiceAuthToken, collectionID, datasetID, edition, batchSize, maxWorkers)
+	return mock.GetVersionsInBatchesFunc(ctx, headers, datasetID, edition, batchSize, maxWorkers)
 }
 
 // GetVersionsInBatchesCalls gets all the calls that were made to GetVersionsInBatches.
 // Check the length with:
 //
-//	len(mockedDatasetClient.GetVersionsInBatchesCalls())
-func (mock *DatasetClientMock) GetVersionsInBatchesCalls() []struct {
-	Ctx                      context.Context
-	UserAuthToken            string
-	ServiceAuthToken         string
-	DownloadServiceAuthToken string
-	CollectionID             string
-	DatasetID                string
-	Edition                  string
-	BatchSize                int
-	MaxWorkers               int
+//	len(mockedDatasetAPIClient.GetVersionsInBatchesCalls())
+func (mock *DatasetAPIClientMock) GetVersionsInBatchesCalls() []struct {
+	Ctx        context.Context
+	Headers    datasetApiSdk.Headers
+	DatasetID  string
+	Edition    string
+	BatchSize  int
+	MaxWorkers int
 } {
 	var calls []struct {
-		Ctx                      context.Context
-		UserAuthToken            string
-		ServiceAuthToken         string
-		DownloadServiceAuthToken string
-		CollectionID             string
-		DatasetID                string
-		Edition                  string
-		BatchSize                int
-		MaxWorkers               int
+		Ctx        context.Context
+		Headers    datasetApiSdk.Headers
+		DatasetID  string
+		Edition    string
+		BatchSize  int
+		MaxWorkers int
 	}
 	mock.lockGetVersionsInBatches.RLock()
 	calls = mock.calls.GetVersionsInBatches
@@ -824,50 +571,42 @@ func (mock *DatasetClientMock) GetVersionsInBatchesCalls() []struct {
 }
 
 // PutDataset calls PutDatasetFunc.
-func (mock *DatasetClientMock) PutDataset(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, datasetID string, d datasetclient.DatasetDetails) error {
+func (mock *DatasetAPIClientMock) PutDataset(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, d dpDatasetApiModels.Dataset) error {
 	if mock.PutDatasetFunc == nil {
-		panic("DatasetClientMock.PutDatasetFunc: method is nil but DatasetClient.PutDataset was just called")
+		panic("DatasetAPIClientMock.PutDatasetFunc: method is nil but DatasetAPIClient.PutDataset was just called")
 	}
 	callInfo := struct {
-		Ctx              context.Context
-		UserAuthToken    string
-		ServiceAuthToken string
-		CollectionID     string
-		DatasetID        string
-		D                datasetclient.DatasetDetails
+		Ctx       context.Context
+		Headers   datasetApiSdk.Headers
+		DatasetID string
+		D         dpDatasetApiModels.Dataset
 	}{
-		Ctx:              ctx,
-		UserAuthToken:    userAuthToken,
-		ServiceAuthToken: serviceAuthToken,
-		CollectionID:     collectionID,
-		DatasetID:        datasetID,
-		D:                d,
+		Ctx:       ctx,
+		Headers:   headers,
+		DatasetID: datasetID,
+		D:         d,
 	}
 	mock.lockPutDataset.Lock()
 	mock.calls.PutDataset = append(mock.calls.PutDataset, callInfo)
 	mock.lockPutDataset.Unlock()
-	return mock.PutDatasetFunc(ctx, userAuthToken, serviceAuthToken, collectionID, datasetID, d)
+	return mock.PutDatasetFunc(ctx, headers, datasetID, d)
 }
 
 // PutDatasetCalls gets all the calls that were made to PutDataset.
 // Check the length with:
 //
-//	len(mockedDatasetClient.PutDatasetCalls())
-func (mock *DatasetClientMock) PutDatasetCalls() []struct {
-	Ctx              context.Context
-	UserAuthToken    string
-	ServiceAuthToken string
-	CollectionID     string
-	DatasetID        string
-	D                datasetclient.DatasetDetails
+//	len(mockedDatasetAPIClient.PutDatasetCalls())
+func (mock *DatasetAPIClientMock) PutDatasetCalls() []struct {
+	Ctx       context.Context
+	Headers   datasetApiSdk.Headers
+	DatasetID string
+	D         dpDatasetApiModels.Dataset
 } {
 	var calls []struct {
-		Ctx              context.Context
-		UserAuthToken    string
-		ServiceAuthToken string
-		CollectionID     string
-		DatasetID        string
-		D                datasetclient.DatasetDetails
+		Ctx       context.Context
+		Headers   datasetApiSdk.Headers
+		DatasetID string
+		D         dpDatasetApiModels.Dataset
 	}
 	mock.lockPutDataset.RLock()
 	calls = mock.calls.PutDataset
@@ -876,54 +615,46 @@ func (mock *DatasetClientMock) PutDatasetCalls() []struct {
 }
 
 // PutInstance calls PutInstanceFunc.
-func (mock *DatasetClientMock) PutInstance(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, instanceID string, i datasetclient.UpdateInstance, ifMatch string) (string, error) {
+func (mock *DatasetAPIClientMock) PutInstance(ctx context.Context, headers datasetApiSdk.Headers, instanceID string, i datasetApiSdk.UpdateInstance, ifMatch string) (string, error) {
 	if mock.PutInstanceFunc == nil {
-		panic("DatasetClientMock.PutInstanceFunc: method is nil but DatasetClient.PutInstance was just called")
+		panic("DatasetAPIClientMock.PutInstanceFunc: method is nil but DatasetAPIClient.PutInstance was just called")
 	}
 	callInfo := struct {
-		Ctx              context.Context
-		UserAuthToken    string
-		ServiceAuthToken string
-		CollectionID     string
-		InstanceID       string
-		I                datasetclient.UpdateInstance
-		IfMatch          string
+		Ctx        context.Context
+		Headers    datasetApiSdk.Headers
+		InstanceID string
+		I          datasetApiSdk.UpdateInstance
+		IfMatch    string
 	}{
-		Ctx:              ctx,
-		UserAuthToken:    userAuthToken,
-		ServiceAuthToken: serviceAuthToken,
-		CollectionID:     collectionID,
-		InstanceID:       instanceID,
-		I:                i,
-		IfMatch:          ifMatch,
+		Ctx:        ctx,
+		Headers:    headers,
+		InstanceID: instanceID,
+		I:          i,
+		IfMatch:    ifMatch,
 	}
 	mock.lockPutInstance.Lock()
 	mock.calls.PutInstance = append(mock.calls.PutInstance, callInfo)
 	mock.lockPutInstance.Unlock()
-	return mock.PutInstanceFunc(ctx, userAuthToken, serviceAuthToken, collectionID, instanceID, i, ifMatch)
+	return mock.PutInstanceFunc(ctx, headers, instanceID, i, ifMatch)
 }
 
 // PutInstanceCalls gets all the calls that were made to PutInstance.
 // Check the length with:
 //
-//	len(mockedDatasetClient.PutInstanceCalls())
-func (mock *DatasetClientMock) PutInstanceCalls() []struct {
-	Ctx              context.Context
-	UserAuthToken    string
-	ServiceAuthToken string
-	CollectionID     string
-	InstanceID       string
-	I                datasetclient.UpdateInstance
-	IfMatch          string
+//	len(mockedDatasetAPIClient.PutInstanceCalls())
+func (mock *DatasetAPIClientMock) PutInstanceCalls() []struct {
+	Ctx        context.Context
+	Headers    datasetApiSdk.Headers
+	InstanceID string
+	I          datasetApiSdk.UpdateInstance
+	IfMatch    string
 } {
 	var calls []struct {
-		Ctx              context.Context
-		UserAuthToken    string
-		ServiceAuthToken string
-		CollectionID     string
-		InstanceID       string
-		I                datasetclient.UpdateInstance
-		IfMatch          string
+		Ctx        context.Context
+		Headers    datasetApiSdk.Headers
+		InstanceID string
+		I          datasetApiSdk.UpdateInstance
+		IfMatch    string
 	}
 	mock.lockPutInstance.RLock()
 	calls = mock.calls.PutInstance
@@ -932,62 +663,54 @@ func (mock *DatasetClientMock) PutInstanceCalls() []struct {
 }
 
 // PutMetadata calls PutMetadataFunc.
-func (mock *DatasetClientMock) PutMetadata(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, datasetID string, edition string, version string, metadata datasetclient.EditableMetadata, versionEtag string) error {
+func (mock *DatasetAPIClientMock) PutMetadata(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, version string, metadata dpDatasetApiModels.EditableMetadata, versionEtag string) error {
 	if mock.PutMetadataFunc == nil {
-		panic("DatasetClientMock.PutMetadataFunc: method is nil but DatasetClient.PutMetadata was just called")
+		panic("DatasetAPIClientMock.PutMetadataFunc: method is nil but DatasetAPIClient.PutMetadata was just called")
 	}
 	callInfo := struct {
-		Ctx              context.Context
-		UserAuthToken    string
-		ServiceAuthToken string
-		CollectionID     string
-		DatasetID        string
-		Edition          string
-		Version          string
-		Metadata         datasetclient.EditableMetadata
-		VersionEtag      string
+		Ctx         context.Context
+		Headers     datasetApiSdk.Headers
+		DatasetID   string
+		Edition     string
+		Version     string
+		Metadata    dpDatasetApiModels.EditableMetadata
+		VersionEtag string
 	}{
-		Ctx:              ctx,
-		UserAuthToken:    userAuthToken,
-		ServiceAuthToken: serviceAuthToken,
-		CollectionID:     collectionID,
-		DatasetID:        datasetID,
-		Edition:          edition,
-		Version:          version,
-		Metadata:         metadata,
-		VersionEtag:      versionEtag,
+		Ctx:         ctx,
+		Headers:     headers,
+		DatasetID:   datasetID,
+		Edition:     edition,
+		Version:     version,
+		Metadata:    metadata,
+		VersionEtag: versionEtag,
 	}
 	mock.lockPutMetadata.Lock()
 	mock.calls.PutMetadata = append(mock.calls.PutMetadata, callInfo)
 	mock.lockPutMetadata.Unlock()
-	return mock.PutMetadataFunc(ctx, userAuthToken, serviceAuthToken, collectionID, datasetID, edition, version, metadata, versionEtag)
+	return mock.PutMetadataFunc(ctx, headers, datasetID, edition, version, metadata, versionEtag)
 }
 
 // PutMetadataCalls gets all the calls that were made to PutMetadata.
 // Check the length with:
 //
-//	len(mockedDatasetClient.PutMetadataCalls())
-func (mock *DatasetClientMock) PutMetadataCalls() []struct {
-	Ctx              context.Context
-	UserAuthToken    string
-	ServiceAuthToken string
-	CollectionID     string
-	DatasetID        string
-	Edition          string
-	Version          string
-	Metadata         datasetclient.EditableMetadata
-	VersionEtag      string
+//	len(mockedDatasetAPIClient.PutMetadataCalls())
+func (mock *DatasetAPIClientMock) PutMetadataCalls() []struct {
+	Ctx         context.Context
+	Headers     datasetApiSdk.Headers
+	DatasetID   string
+	Edition     string
+	Version     string
+	Metadata    dpDatasetApiModels.EditableMetadata
+	VersionEtag string
 } {
 	var calls []struct {
-		Ctx              context.Context
-		UserAuthToken    string
-		ServiceAuthToken string
-		CollectionID     string
-		DatasetID        string
-		Edition          string
-		Version          string
-		Metadata         datasetclient.EditableMetadata
-		VersionEtag      string
+		Ctx         context.Context
+		Headers     datasetApiSdk.Headers
+		DatasetID   string
+		Edition     string
+		Version     string
+		Metadata    dpDatasetApiModels.EditableMetadata
+		VersionEtag string
 	}
 	mock.lockPutMetadata.RLock()
 	calls = mock.calls.PutMetadata
@@ -996,58 +719,50 @@ func (mock *DatasetClientMock) PutMetadataCalls() []struct {
 }
 
 // PutVersion calls PutVersionFunc.
-func (mock *DatasetClientMock) PutVersion(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, datasetID string, edition string, version string, v datasetclient.Version) error {
+func (mock *DatasetAPIClientMock) PutVersion(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, editionID string, versionID string, version dpDatasetApiModels.Version) (dpDatasetApiModels.Version, error) {
 	if mock.PutVersionFunc == nil {
-		panic("DatasetClientMock.PutVersionFunc: method is nil but DatasetClient.PutVersion was just called")
+		panic("DatasetAPIClientMock.PutVersionFunc: method is nil but DatasetAPIClient.PutVersion was just called")
 	}
 	callInfo := struct {
-		Ctx              context.Context
-		UserAuthToken    string
-		ServiceAuthToken string
-		CollectionID     string
-		DatasetID        string
-		Edition          string
-		Version          string
-		V                datasetclient.Version
+		Ctx       context.Context
+		Headers   datasetApiSdk.Headers
+		DatasetID string
+		EditionID string
+		VersionID string
+		Version   dpDatasetApiModels.Version
 	}{
-		Ctx:              ctx,
-		UserAuthToken:    userAuthToken,
-		ServiceAuthToken: serviceAuthToken,
-		CollectionID:     collectionID,
-		DatasetID:        datasetID,
-		Edition:          edition,
-		Version:          version,
-		V:                v,
+		Ctx:       ctx,
+		Headers:   headers,
+		DatasetID: datasetID,
+		EditionID: editionID,
+		VersionID: versionID,
+		Version:   version,
 	}
 	mock.lockPutVersion.Lock()
 	mock.calls.PutVersion = append(mock.calls.PutVersion, callInfo)
 	mock.lockPutVersion.Unlock()
-	return mock.PutVersionFunc(ctx, userAuthToken, serviceAuthToken, collectionID, datasetID, edition, version, v)
+	return mock.PutVersionFunc(ctx, headers, datasetID, editionID, versionID, version)
 }
 
 // PutVersionCalls gets all the calls that were made to PutVersion.
 // Check the length with:
 //
-//	len(mockedDatasetClient.PutVersionCalls())
-func (mock *DatasetClientMock) PutVersionCalls() []struct {
-	Ctx              context.Context
-	UserAuthToken    string
-	ServiceAuthToken string
-	CollectionID     string
-	DatasetID        string
-	Edition          string
-	Version          string
-	V                datasetclient.Version
+//	len(mockedDatasetAPIClient.PutVersionCalls())
+func (mock *DatasetAPIClientMock) PutVersionCalls() []struct {
+	Ctx       context.Context
+	Headers   datasetApiSdk.Headers
+	DatasetID string
+	EditionID string
+	VersionID string
+	Version   dpDatasetApiModels.Version
 } {
 	var calls []struct {
-		Ctx              context.Context
-		UserAuthToken    string
-		ServiceAuthToken string
-		CollectionID     string
-		DatasetID        string
-		Edition          string
-		Version          string
-		V                datasetclient.Version
+		Ctx       context.Context
+		Headers   datasetApiSdk.Headers
+		DatasetID string
+		EditionID string
+		VersionID string
+		Version   dpDatasetApiModels.Version
 	}
 	mock.lockPutVersion.RLock()
 	calls = mock.calls.PutVersion

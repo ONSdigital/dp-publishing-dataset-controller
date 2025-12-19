@@ -10,6 +10,8 @@ import (
 
 	dataset "github.com/ONSdigital/dp-api-clients-go/v2/dataset"
 	zebedee "github.com/ONSdigital/dp-api-clients-go/v2/zebedee"
+	dpDatasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
+	datasetApiSdk "github.com/ONSdigital/dp-dataset-api/sdk"
 	babbageclient "github.com/ONSdigital/dp-publishing-dataset-controller/clients/topics"
 	"github.com/ONSdigital/dp-publishing-dataset-controller/model"
 	"github.com/ONSdigital/log.go/v2/log"
@@ -22,7 +24,7 @@ type related struct {
 	datasets      []model.RelatedContent
 }
 
-func AllDatasets(datasets dataset.List) []model.Dataset {
+func AllDatasets(datasets datasetApiSdk.DatasetsList) []model.Dataset {
 	var mappedDatasets []model.Dataset
 	for _, ds := range datasets.Items {
 		if &ds == nil || ds.Next == nil || ds.Next.Type == "nomis" {
@@ -41,7 +43,7 @@ func AllDatasets(datasets dataset.List) []model.Dataset {
 	return mappedDatasets
 }
 
-func AllVersions(ctx context.Context, dataset dataset.Dataset, edition dataset.Edition, versions dataset.VersionsList) model.VersionsPage {
+func AllVersions(ctx context.Context, dataset dpDatasetApiModels.DatasetUpdate, edition dpDatasetApiModels.Edition, versions datasetApiSdk.VersionsList) model.VersionsPage {
 	datasetName := dataset.Next.Title
 	editionName := edition.Edition
 	var mappedVersions []model.Version
@@ -77,7 +79,7 @@ func AllVersions(ctx context.Context, dataset dataset.Dataset, edition dataset.E
 	}
 }
 
-func EditMetadata(d *dataset.DatasetDetails, v dataset.Version, dim []dataset.VersionDimension, c zebedee.Collection) model.EditMetadata {
+func EditMetadata(d *dpDatasetApiModels.Dataset, v dpDatasetApiModels.Version, dim []dpDatasetApiModels.Dimension, c zebedee.Collection) model.EditMetadata {
 	mappedMetadata := model.EditMetadata{
 		Dataset:      *d,
 		Version:      v,
@@ -99,16 +101,16 @@ func EditMetadata(d *dataset.DatasetDetails, v dataset.Version, dim []dataset.Ve
 }
 
 // PutMetadata transform an EditMetadata object to the EditableMetadata as expected by dataset api
-func PutMetadata(m model.EditMetadata) dataset.EditableMetadata {
-	metadata := dataset.EditableMetadata{
+func PutMetadata(m model.EditMetadata) dpDatasetApiModels.EditableMetadata {
+	metadata := dpDatasetApiModels.EditableMetadata{
 		CanonicalTopic:    m.Dataset.CanonicalTopic,
 		Description:       m.Dataset.Description,
 		Dimensions:        m.Version.Dimensions,
-		LatestChanges:     &m.Version.LatestChanges,
+		LatestChanges:     m.Version.LatestChanges,
 		License:           m.Dataset.License,
-		NationalStatistic: &m.Dataset.NationalStatistic,
+		NationalStatistic: m.Dataset.NationalStatistic,
 		NextRelease:       m.Dataset.NextRelease,
-		QMI:               &m.Dataset.QMI,
+		QMI:               m.Dataset.QMI,
 		ReleaseDate:       m.Version.ReleaseDate,
 		ReleaseFrequency:  m.Dataset.ReleaseFrequency,
 		Subtopics:         m.Dataset.Subtopics,
@@ -118,22 +120,22 @@ func PutMetadata(m model.EditMetadata) dataset.EditableMetadata {
 	}
 
 	if m.Dataset.Contacts != nil {
-		metadata.Contacts = *m.Dataset.Contacts
+		metadata.Contacts = m.Dataset.Contacts
 	}
 	if m.Dataset.Keywords != nil {
-		metadata.Keywords = *m.Dataset.Keywords
+		metadata.Keywords = m.Dataset.Keywords
 	}
 	if m.Dataset.Methodologies != nil {
-		metadata.Methodologies = *m.Dataset.Methodologies
+		metadata.Methodologies = m.Dataset.Methodologies
 	}
 	if m.Dataset.Publications != nil {
-		metadata.Publications = *m.Dataset.Publications
+		metadata.Publications = m.Dataset.Publications
 	}
 	if m.Dataset.RelatedDatasets != nil {
-		metadata.RelatedDatasets = *m.Dataset.RelatedDatasets
+		metadata.RelatedDatasets = m.Dataset.RelatedDatasets
 	}
 	if m.Dataset.RelatedContent != nil {
-		metadata.RelatedContent = *m.Dataset.RelatedContent
+		metadata.RelatedContent = m.Dataset.RelatedContent
 	}
 
 	if m.Version.Alerts != nil {

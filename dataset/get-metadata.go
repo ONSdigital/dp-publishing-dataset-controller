@@ -8,9 +8,10 @@ import (
 	"net/url"
 	"strings"
 
-	datasetclient "github.com/ONSdigital/dp-api-clients-go/v2/dataset"
 	zebedeeclient "github.com/ONSdigital/dp-api-clients-go/v2/zebedee"
-	dphandlers "github.com/ONSdigital/dp-net/handlers"
+	dpDatasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
+	datasetApiSdk "github.com/ONSdigital/dp-dataset-api/sdk"
+	dphandlers "github.com/ONSdigital/dp-net/v3/handlers"
 	"github.com/ONSdigital/dp-publishing-dataset-controller/mapper"
 	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/gorilla/mux"
@@ -25,14 +26,14 @@ type ClientError interface {
 const editionConfirmedState = "edition-confirmed"
 
 // GetEditMetadataHandler is a handler that wraps getEditMetadataHandler passing in addition arguments
-func GetMetadataHandler(dc DatasetClient, zc ZebedeeClient) http.HandlerFunc {
+func GetMetadataHandler(dc DatasetAPIClient, zc ZebedeeClient) http.HandlerFunc {
 	return dphandlers.ControllerHandler(func(w http.ResponseWriter, r *http.Request, lang, collectionID, accessToken string) {
 		getEditMetadataHandler(w, r, dc, zc, accessToken, collectionID, lang)
 	})
 }
 
 // getEditMetadataHandler gets the Edit Metadata page information used on the edit metadata screens
-func getEditMetadataHandler(w http.ResponseWriter, req *http.Request, dc DatasetClient, zc ZebedeeClient, userAccessToken, collectionID, lang string) {
+func getEditMetadataHandler(w http.ResponseWriter, req *http.Request, dc DatasetAPIClient, zc ZebedeeClient, userAccessToken, collectionID, lang string) {
 	ctx := req.Context()
 
 	err := checkAccessTokenAndCollectionHeaders(userAccessToken, collectionID)
@@ -53,7 +54,12 @@ func getEditMetadataHandler(w http.ResponseWriter, req *http.Request, dc Dataset
 		"version":   version,
 	}
 
-	v, headers, err := dc.GetVersionWithHeaders(ctx, userAccessToken, "", "", collectionID, datasetID, edition, version)
+	headers := datasetApiSdk.Headers{
+		CollectionID: collectionID,
+		AccessToken:  userAccessToken,
+	}
+
+	v, sdkheaders, err := dc.GetVersionWithHeaders(ctx, headers, datasetID, edition, version)
 	if err != nil {
 		log.Error(ctx, "failed Get version details", err, log.Data(logInfo))
 		setErrorStatusCode(req, w, err, datasetID)
@@ -62,7 +68,7 @@ func getEditMetadataHandler(w http.ResponseWriter, req *http.Request, dc Dataset
 
 	// we get the next and current doc so that we have info relating to latest published version
 	// on the current doc
-	d, err := dc.GetDatasetCurrentAndNext(ctx, userAccessToken, "", collectionID, datasetID)
+	d, err := dc.GetDatasetCurrentAndNext(ctx, headers, datasetID)
 	if err != nil {
 		log.Error(ctx, "failed Get dataset details", err, log.Data(logInfo))
 		setErrorStatusCode(req, w, err, datasetID)
@@ -72,9 +78,9 @@ func getEditMetadataHandler(w http.ResponseWriter, req *http.Request, dc Dataset
 	// if the version state is "edition-confirmed" it's in a pre-edited state so we get previously
 	// published version's dimensions and return those so that they are pre-populated in the browser
 	// to prevent the user having to fill these in again
-	dims := []datasetclient.VersionDimension{}
+	dims := []dpDatasetApiModels.Dimension{}
 	if v.State == editionConfirmedState && v.Version > 1 {
-		dimensions := getLatestPublishedVersionDimensions(ctx, w, req, dc, userAccessToken, collectionID, d.Current.Links.LatestVersion.URL)
+		dimensions := getLatestPublishedVersionDimensions(ctx, w, req, dc, headers, d.Current.Links.LatestVersion.HRef)
 		dims = append(dims, dimensions...)
 	}
 
@@ -86,7 +92,7 @@ func getEditMetadataHandler(w http.ResponseWriter, req *http.Request, dc Dataset
 	}
 
 	editMetadata := mapper.EditMetadata(d.Next, v, dims, c)
-	editMetadata.VersionEtag = headers.ETag
+	editMetadata.VersionEtag = sdkheaders.ETag
 
 	b, err := json.Marshal(editMetadata)
 	if err != nil {
@@ -117,18 +123,18 @@ func getCollectionDetails(ctx context.Context, zc ZebedeeClient, userAccessToken
 	}
 }
 
-func getLatestPublishedVersionDimensions(ctx context.Context, w http.ResponseWriter, req *http.Request, dc DatasetClient, userAccessToken, collectionID, latestVersionURL string) []datasetclient.VersionDimension {
+func getLatestPublishedVersionDimensions(ctx context.Context, w http.ResponseWriter, req *http.Request, dc DatasetAPIClient, headers datasetApiSdk.Headers, latestVersionURL string) []dpDatasetApiModels.Dimension {
 	datasetID, editionID, versionID, err := getIDsFromURL(latestVersionURL)
 	if err != nil {
 		log.Error(ctx, "failed to parse latest version url", err)
-		return []datasetclient.VersionDimension{}
+		return []dpDatasetApiModels.Dimension{}
 	}
 
-	latestPublishedVersion, err := dc.GetVersion(ctx, userAccessToken, "", "", collectionID, datasetID, editionID, versionID)
+	latestPublishedVersion, err := dc.GetVersion(ctx, headers, datasetID, editionID, versionID)
 	if err != nil {
 		log.Error(ctx, "failed Get latest published version details", err)
 		setErrorStatusCode(req, w, err, datasetID)
-		return []datasetclient.VersionDimension{}
+		return []dpDatasetApiModels.Dimension{}
 	}
 
 	return latestPublishedVersion.Dimensions

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	dphandlers "github.com/ONSdigital/dp-net/handlers"
+	dphandlers "github.com/ONSdigital/dp-net/v3/handlers"
 	"github.com/ONSdigital/dp-publishing-dataset-controller/mapper"
 	"github.com/ONSdigital/log.go/v2/log"
 )
