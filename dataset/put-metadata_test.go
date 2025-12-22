@@ -10,7 +10,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	dpDatasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
+	datasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
 	datasetApiSdk "github.com/ONSdigital/dp-dataset-api/sdk"
 	"github.com/ONSdigital/dp-publishing-dataset-controller/model"
 	"github.com/gorilla/mux"
@@ -28,11 +28,11 @@ func TestUnitPutMetadata(t *testing.T) {
 	Convey("test putMetadata", t, func() {
 		Convey("on success", func() {
 			mockDatasetClient := &DatasetAPIClientMock{
-				PutDatasetFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, d dpDatasetApiModels.Dataset) error {
+				PutDatasetFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, d datasetApiModels.Dataset) error {
 					return nil
 				},
-				PutVersionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition, version string, v dpDatasetApiModels.Version) (dpDatasetApiModels.Version, error) {
-					return dpDatasetApiModels.Version{}, nil
+				PutVersionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition, version string, v datasetApiModels.Version) (datasetApiModels.Version, error) {
+					return datasetApiModels.Version{}, nil
 				},
 				PutInstanceFunc: func(ctx context.Context, headers datasetApiSdk.Headers, instanceID string, i datasetApiSdk.UpdateInstance, ifMatch string) (string, error) {
 					return "", nil
@@ -64,11 +64,11 @@ func TestUnitPutMetadata(t *testing.T) {
 
 		Convey("errors if no headers are passed", func() {
 			mockDatasetClient := &DatasetAPIClientMock{
-				PutDatasetFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, d dpDatasetApiModels.Dataset) error {
+				PutDatasetFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, d datasetApiModels.Dataset) error {
 					return nil
 				},
-				PutVersionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition, version string, v dpDatasetApiModels.Version) (dpDatasetApiModels.Version, error) {
-					return dpDatasetApiModels.Version{}, nil
+				PutVersionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition, version string, v datasetApiModels.Version) (datasetApiModels.Version, error) {
+					return datasetApiModels.Version{}, nil
 				},
 				PutInstanceFunc: func(ctx context.Context, headers datasetApiSdk.Headers, instanceID string, i datasetApiSdk.UpdateInstance, ifMatch string) (string, error) {
 					return "", nil
@@ -126,11 +126,11 @@ func TestUnitPutMetadata(t *testing.T) {
 
 		Convey("handles error from dataset client", func() {
 			mockDatasetClient := &DatasetAPIClientMock{
-				PutDatasetFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, d dpDatasetApiModels.Dataset) error {
+				PutDatasetFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, d datasetApiModels.Dataset) error {
 					return errors.New("test dataset API error")
 				},
-				PutVersionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition, version string, v dpDatasetApiModels.Version) (dpDatasetApiModels.Version, error) {
-					return dpDatasetApiModels.Version{}, nil
+				PutVersionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition, version string, v datasetApiModels.Version) (datasetApiModels.Version, error) {
+					return datasetApiModels.Version{}, nil
 				},
 				PutInstanceFunc: func(ctx context.Context, headers datasetApiSdk.Headers, instanceID string, i datasetApiSdk.UpdateInstance, ifMatch string) (string, error) {
 					return "", nil
@@ -176,10 +176,10 @@ func TestUnitPutEditableMetadata(t *testing.T) {
 		*nationalStatistic = true
 
 		metadata := model.EditMetadata{
-			Dataset: dpDatasetApiModels.Dataset{
+			Dataset: datasetApiModels.Dataset{
 				ID:           mockDatasetId,
 				CollectionID: mockCollectionId,
-				Contacts: []dpDatasetApiModels.ContactDetails{{
+				Contacts: []datasetApiModels.ContactDetails{{
 					Name:      "contact",
 					Email:     "contact@ons.gov.uk",
 					Telephone: "029",
@@ -187,7 +187,7 @@ func TestUnitPutEditableMetadata(t *testing.T) {
 				Description: "dataset description",
 				Keywords:    []string{"one", "two"},
 				License:     "license",
-				Methodologies: []dpDatasetApiModels.GeneralDetails{
+				Methodologies: []datasetApiModels.GeneralDetails{
 					{
 						Title:       "methodology",
 						Description: "methodology description",
@@ -196,25 +196,25 @@ func TestUnitPutEditableMetadata(t *testing.T) {
 				},
 				NationalStatistic: nationalStatistic,
 				NextRelease:       "tomorrow",
-				Publications:      []dpDatasetApiModels.GeneralDetails{},
-				QMI:               &dpDatasetApiModels.GeneralDetails{},
-				RelatedDatasets:   []dpDatasetApiModels.GeneralDetails{},
+				Publications:      []datasetApiModels.GeneralDetails{},
+				QMI:               &datasetApiModels.GeneralDetails{},
+				RelatedDatasets:   []datasetApiModels.GeneralDetails{},
 				ReleaseFrequency:  "daily",
 				Title:             "dataset title",
 				UnitOfMeasure:     "unit",
 				CanonicalTopic:    "topic",
 				Subtopics:         []string{"three"},
 				Survey:            "census",
-				RelatedContent:    []dpDatasetApiModels.GeneralDetails{},
+				RelatedContent:    []datasetApiModels.GeneralDetails{},
 			},
-			Version: dpDatasetApiModels.Version{
-				Alerts:        &[]dpDatasetApiModels.Alert{},
+			Version: datasetApiModels.Version{
+				Alerts:        &[]datasetApiModels.Alert{},
 				CollectionID:  mockCollectionId,
-				Dimensions:    []dpDatasetApiModels.Dimension{},
+				Dimensions:    []datasetApiModels.Dimension{},
 				ID:            "version-id",
-				LatestChanges: &[]dpDatasetApiModels.LatestChange{},
+				LatestChanges: &[]datasetApiModels.LatestChange{},
 				Version:       1,
-				UsageNotes:    &[]dpDatasetApiModels.UsageNote{},
+				UsageNotes:    &[]datasetApiModels.UsageNote{},
 			},
 			CollectionState: "in-progress",
 			VersionEtag:     etag,
@@ -224,7 +224,7 @@ func TestUnitPutEditableMetadata(t *testing.T) {
 			florenceToken := "testuser"
 
 			datasetClient := &DatasetAPIClientMock{
-				PutMetadataFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition, version string, editableMetadata dpDatasetApiModels.EditableMetadata, versionEtag string) error {
+				PutMetadataFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition, version string, editableMetadata datasetApiModels.EditableMetadata, versionEtag string) error {
 					if headers.AccessToken != florenceToken {
 						return errors.New("Function called with unexpected tokens")
 					}

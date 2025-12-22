@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	dpDatasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
+	datasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
 	datasetApiSdk "github.com/ONSdigital/dp-dataset-api/sdk"
 	"github.com/gorilla/mux"
 
@@ -20,20 +20,20 @@ func TestUnitGetEditions(t *testing.T) {
 
 	datasetID := "test-dataset"
 
-	mockedDatasetResponse := dpDatasetApiModels.DatasetUpdate{
-		Next: &dpDatasetApiModels.Dataset{
+	mockedDatasetResponse := datasetApiModels.DatasetUpdate{
+		Next: &datasetApiModels.Dataset{
 			Title: "Test title",
 		},
 	}
 
-	var editionList []dpDatasetApiModels.Edition
-	editionList = append(editionList, dpDatasetApiModels.Edition{Edition: "edition-1", Links: &dpDatasetApiModels.EditionUpdateLinks{LatestVersion: &dpDatasetApiModels.LinkObject{HRef: "/datasets/test-dataset/editions/edition/versions/1"}}}, dpDatasetApiModels.Edition{Edition: "edition-2", Links: &dpDatasetApiModels.EditionUpdateLinks{LatestVersion: &dpDatasetApiModels.LinkObject{HRef: "/datasets/test-dataset/editions/edition2/versions/1"}}})
+	var editionList []datasetApiModels.Edition
+	editionList = append(editionList, datasetApiModels.Edition{Edition: "edition-1", Links: &datasetApiModels.EditionUpdateLinks{LatestVersion: &datasetApiModels.LinkObject{HRef: "/datasets/test-dataset/editions/edition/versions/1"}}}, datasetApiModels.Edition{Edition: "edition-2", Links: &datasetApiModels.EditionUpdateLinks{LatestVersion: &datasetApiModels.LinkObject{HRef: "/datasets/test-dataset/editions/edition2/versions/1"}}})
 
 	mockedEditionResponse := datasetApiSdk.EditionsList{
 		Items: editionList,
 	}
 
-	mockedVersionResponse := dpDatasetApiModels.Version{
+	mockedVersionResponse := datasetApiModels.Version{
 		ID:          "version-1",
 		Version:     1,
 		ReleaseDate: "2020-11-07T00:00:00.000Z",
@@ -43,13 +43,13 @@ func TestUnitGetEditions(t *testing.T) {
 
 	Convey("test getAllEditions", t, func() {
 		mockDatasetClient := &DatasetAPIClientMock{
-			GetDatasetCurrentAndNextFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string) (dpDatasetApiModels.DatasetUpdate, error) {
+			GetDatasetCurrentAndNextFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string) (datasetApiModels.DatasetUpdate, error) {
 				return mockedDatasetResponse, nil
 			},
 			GetEditionsFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, q *datasetApiSdk.QueryParams) (datasetApiSdk.EditionsList, error) {
 				return mockedEditionResponse, nil
 			},
-			GetVersionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, editionID string, versionID string) (dpDatasetApiModels.Version, error) {
+			GetVersionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, editionID string, versionID string) (datasetApiModels.Version, error) {
 				return mockedVersionResponse, nil
 			},
 		}
@@ -120,13 +120,13 @@ func TestUnitGetEditions(t *testing.T) {
 
 		Convey("handles error from dataset client", func() {
 			mockDatasetClient := &DatasetAPIClientMock{
-				GetDatasetCurrentAndNextFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string) (dpDatasetApiModels.DatasetUpdate, error) {
+				GetDatasetCurrentAndNextFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string) (datasetApiModels.DatasetUpdate, error) {
 					return mockedDatasetResponse, nil
 				},
 				GetEditionsFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, queryParams *datasetApiSdk.QueryParams) (datasetApiSdk.EditionsList, error) {
 					return mockedEditionResponse, errors.New("test dataset API error")
 				},
-				GetVersionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, editionID string, versionID string) (dpDatasetApiModels.Version, error) {
+				GetVersionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, editionID string, versionID string) (datasetApiModels.Version, error) {
 					return mockedVersionResponse, nil
 				},
 			}

@@ -10,7 +10,7 @@ import (
 
 	"github.com/gorilla/mux"
 
-	dpDatasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
+	datasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
 	datasetApiSdk "github.com/ONSdigital/dp-dataset-api/sdk"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -24,17 +24,17 @@ func TestUnitGetVersions(t *testing.T) {
 	verionsBatchSize := 10
 	versionsMaxWorkers := 3
 
-	mockedDatasetResponse := dpDatasetApiModels.DatasetUpdate{
-		Next: &dpDatasetApiModels.Dataset{
+	mockedDatasetResponse := datasetApiModels.DatasetUpdate{
+		Next: &datasetApiModels.Dataset{
 			Title: "Test title",
 		},
 	}
 
-	mockedEditionResponse := dpDatasetApiModels.Edition{
+	mockedEditionResponse := datasetApiModels.Edition{
 		Edition: "edition-1",
 	}
 
-	mockedVersionsResponse := []dpDatasetApiModels.Version{
+	mockedVersionsResponse := []datasetApiModels.Version{
 		{
 			ID:      "version-1",
 			Version: 1,
@@ -49,10 +49,10 @@ func TestUnitGetVersions(t *testing.T) {
 
 	Convey("test getAllVersions", t, func() {
 		mockDatasetClient := &DatasetAPIClientMock{
-			GetDatasetCurrentAndNextFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string) (dpDatasetApiModels.DatasetUpdate, error) {
+			GetDatasetCurrentAndNextFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string) (datasetApiModels.DatasetUpdate, error) {
 				return mockedDatasetResponse, nil
 			},
-			GetEditionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, editionID string) (dpDatasetApiModels.Edition, error) {
+			GetEditionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, editionID string) (datasetApiModels.Edition, error) {
 				return mockedEditionResponse, nil
 			},
 			GetVersionsInBatchesFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, editionID string, batchSize int, maxWorkers int) (datasetApiSdk.VersionsList, error) {
@@ -125,10 +125,10 @@ func TestUnitGetVersions(t *testing.T) {
 
 		Convey("handles error from dataset client", func() {
 			mockDatasetClient := &DatasetAPIClientMock{
-				GetDatasetCurrentAndNextFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string) (dpDatasetApiModels.DatasetUpdate, error) {
+				GetDatasetCurrentAndNextFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string) (datasetApiModels.DatasetUpdate, error) {
 					return mockedDatasetResponse, nil
 				},
-				GetEditionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, editionID string) (dpDatasetApiModels.Edition, error) {
+				GetEditionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, editionID string) (datasetApiModels.Edition, error) {
 					return mockedEditionResponse, nil
 				},
 				GetVersionsInBatchesFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, editionID string, batchSize int, maxWorkers int) (datasetApiSdk.VersionsList, error) {

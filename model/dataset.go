@@ -2,7 +2,7 @@ package model
 
 import (
 	"github.com/ONSdigital/dp-api-clients-go/v2/dataset"
-	dpDatasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
+	datasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
 )
 
 type Dataset struct {
@@ -35,13 +35,13 @@ type Version struct {
 }
 
 type EditMetadata struct {
-	Dataset                dpDatasetApiModels.Dataset     `json:"dataset"`
-	Version                dpDatasetApiModels.Version     `json:"version"`
-	Dimensions             []dpDatasetApiModels.Dimension `json:"dimensions"`
-	CollectionID           string                         `json:"collection_id"`
-	CollectionState        string                         `json:"collection_state"`
-	CollectionLastEditedBy string                         `json:"collection_last_edited_by"`
-	VersionEtag            string                         `json:"version_etag"`
+	Dataset                datasetApiModels.Dataset     `json:"dataset"`
+	Version                datasetApiModels.Version     `json:"version"`
+	Dimensions             []datasetApiModels.Dimension `json:"dimensions"`
+	CollectionID           string                       `json:"collection_id"`
+	CollectionState        string                       `json:"collection_state"`
+	CollectionLastEditedBy string                       `json:"collection_last_edited_by"`
+	VersionEtag            string                       `json:"version_etag"`
 }
 
 type EditVersionMetaData struct {

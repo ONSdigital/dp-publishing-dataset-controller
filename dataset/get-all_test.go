@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	dpDatasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
+	datasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
 	datasetApiSdk "github.com/ONSdigital/dp-dataset-api/sdk"
 	"github.com/gorilla/mux"
 
@@ -18,16 +18,16 @@ func TestUnitGetAllDatasets(t *testing.T) {
 	datasetsBatchSize := 10
 	datasetsMaxWorkers := 3
 
-	mockedDatasetResponse := []dpDatasetApiModels.DatasetUpdate{
+	mockedDatasetResponse := []datasetApiModels.DatasetUpdate{
 		{
 			ID: "id-1",
-			Next: &dpDatasetApiModels.Dataset{
+			Next: &datasetApiModels.Dataset{
 				Title: "Test title 1",
 			},
 		},
 		{
 			ID: "id-2",
-			Next: &dpDatasetApiModels.Dataset{
+			Next: &datasetApiModels.Dataset{
 				Title: "Test title 2",
 			},
 		},

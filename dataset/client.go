@@ -4,7 +4,7 @@ import (
 	"context"
 
 	zebedeeclient "github.com/ONSdigital/dp-api-clients-go/v2/zebedee"
-	dpDatasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
+	datasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
 	datasetApiSdk "github.com/ONSdigital/dp-dataset-api/sdk"
 	babbageclient "github.com/ONSdigital/dp-publishing-dataset-controller/clients/topics"
 )
@@ -13,15 +13,15 @@ import (
 
 type DatasetAPIClient interface {
 	GetDatasetsInBatches(ctx context.Context, headers datasetApiSdk.Headers, batchSize, maxWorkers int) (datasetApiSdk.DatasetsList, error)
-	GetEdition(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition string) (dpDatasetApiModels.Edition, error)
+	GetEdition(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition string) (datasetApiModels.Edition, error)
 	GetEditions(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, q *datasetApiSdk.QueryParams) (m datasetApiSdk.EditionsList, err error)
-	GetDatasetCurrentAndNext(ctx context.Context, headers datasetApiSdk.Headers, datasetID string) (m dpDatasetApiModels.DatasetUpdate, err error)
-	GetVersionWithHeaders(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition, version string) (v dpDatasetApiModels.Version, h datasetApiSdk.ResponseHeaders, err error)
-	GetVersion(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition, version string) (m dpDatasetApiModels.Version, err error)
+	GetDatasetCurrentAndNext(ctx context.Context, headers datasetApiSdk.Headers, datasetID string) (m datasetApiModels.DatasetUpdate, err error)
+	GetVersionWithHeaders(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition, version string) (v datasetApiModels.Version, h datasetApiSdk.ResponseHeaders, err error)
+	GetVersion(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition, version string) (m datasetApiModels.Version, err error)
 	GetVersionsInBatches(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition string, batchSize, maxWorkers int) (versions datasetApiSdk.VersionsList, err error)
-	PutDataset(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, d dpDatasetApiModels.Dataset) error
-	PutMetadata(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition, version string, metadata dpDatasetApiModels.EditableMetadata, versionEtag string) error
-	PutVersion(ctx context.Context, headers datasetApiSdk.Headers, datasetID, editionID, versionID string, version dpDatasetApiModels.Version) (updatedVersion dpDatasetApiModels.Version, err error)
+	PutDataset(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, d datasetApiModels.Dataset) error
+	PutMetadata(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition, version string, metadata datasetApiModels.EditableMetadata, versionEtag string) error
+	PutVersion(ctx context.Context, headers datasetApiSdk.Headers, datasetID, editionID, versionID string, version datasetApiModels.Version) (updatedVersion datasetApiModels.Version, err error)
 	PutInstance(ctx context.Context, headers datasetApiSdk.Headers, instanceID string, i datasetApiSdk.UpdateInstance, ifMatch string) (eTag string, err error)
 }
 

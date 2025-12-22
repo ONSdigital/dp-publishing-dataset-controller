@@ -5,11 +5,12 @@ package dataset
 
 import (
 	"context"
+	"sync"
+
 	zebedeeclient "github.com/ONSdigital/dp-api-clients-go/v2/zebedee"
-	dpDatasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
+	datasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
 	datasetApiSdk "github.com/ONSdigital/dp-dataset-api/sdk"
 	babbageclient "github.com/ONSdigital/dp-publishing-dataset-controller/clients/topics"
-	"sync"
 )
 
 // Ensure, that DatasetAPIClientMock does implement DatasetAPIClient.
@@ -22,37 +23,37 @@ var _ DatasetAPIClient = &DatasetAPIClientMock{}
 //
 //		// make and configure a mocked DatasetAPIClient
 //		mockedDatasetAPIClient := &DatasetAPIClientMock{
-//			GetDatasetCurrentAndNextFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string) (dpDatasetApiModels.DatasetUpdate, error) {
+//			GetDatasetCurrentAndNextFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string) (datasetApiModels.DatasetUpdate, error) {
 //				panic("mock out the GetDatasetCurrentAndNext method")
 //			},
 //			GetDatasetsInBatchesFunc: func(ctx context.Context, headers datasetApiSdk.Headers, batchSize int, maxWorkers int) (datasetApiSdk.DatasetsList, error) {
 //				panic("mock out the GetDatasetsInBatches method")
 //			},
-//			GetEditionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string) (dpDatasetApiModels.Edition, error) {
+//			GetEditionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string) (datasetApiModels.Edition, error) {
 //				panic("mock out the GetEdition method")
 //			},
 //			GetEditionsFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, q *datasetApiSdk.QueryParams) (datasetApiSdk.EditionsList, error) {
 //				panic("mock out the GetEditions method")
 //			},
-//			GetVersionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, version string) (dpDatasetApiModels.Version, error) {
+//			GetVersionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, version string) (datasetApiModels.Version, error) {
 //				panic("mock out the GetVersion method")
 //			},
-//			GetVersionWithHeadersFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, version string) (dpDatasetApiModels.Version, datasetApiSdk.ResponseHeaders, error) {
+//			GetVersionWithHeadersFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, version string) (datasetApiModels.Version, datasetApiSdk.ResponseHeaders, error) {
 //				panic("mock out the GetVersionWithHeaders method")
 //			},
 //			GetVersionsInBatchesFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, batchSize int, maxWorkers int) (datasetApiSdk.VersionsList, error) {
 //				panic("mock out the GetVersionsInBatches method")
 //			},
-//			PutDatasetFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, d dpDatasetApiModels.Dataset) error {
+//			PutDatasetFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, d datasetApiModels.Dataset) error {
 //				panic("mock out the PutDataset method")
 //			},
 //			PutInstanceFunc: func(ctx context.Context, headers datasetApiSdk.Headers, instanceID string, i datasetApiSdk.UpdateInstance, ifMatch string) (string, error) {
 //				panic("mock out the PutInstance method")
 //			},
-//			PutMetadataFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, version string, metadata dpDatasetApiModels.EditableMetadata, versionEtag string) error {
+//			PutMetadataFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, version string, metadata datasetApiModels.EditableMetadata, versionEtag string) error {
 //				panic("mock out the PutMetadata method")
 //			},
-//			PutVersionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, editionID string, versionID string, version dpDatasetApiModels.Version) (dpDatasetApiModels.Version, error) {
+//			PutVersionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, editionID string, versionID string, version datasetApiModels.Version) (datasetApiModels.Version, error) {
 //				panic("mock out the PutVersion method")
 //			},
 //		}
@@ -63,37 +64,37 @@ var _ DatasetAPIClient = &DatasetAPIClientMock{}
 //	}
 type DatasetAPIClientMock struct {
 	// GetDatasetCurrentAndNextFunc mocks the GetDatasetCurrentAndNext method.
-	GetDatasetCurrentAndNextFunc func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string) (dpDatasetApiModels.DatasetUpdate, error)
+	GetDatasetCurrentAndNextFunc func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string) (datasetApiModels.DatasetUpdate, error)
 
 	// GetDatasetsInBatchesFunc mocks the GetDatasetsInBatches method.
 	GetDatasetsInBatchesFunc func(ctx context.Context, headers datasetApiSdk.Headers, batchSize int, maxWorkers int) (datasetApiSdk.DatasetsList, error)
 
 	// GetEditionFunc mocks the GetEdition method.
-	GetEditionFunc func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string) (dpDatasetApiModels.Edition, error)
+	GetEditionFunc func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string) (datasetApiModels.Edition, error)
 
 	// GetEditionsFunc mocks the GetEditions method.
 	GetEditionsFunc func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, q *datasetApiSdk.QueryParams) (datasetApiSdk.EditionsList, error)
 
 	// GetVersionFunc mocks the GetVersion method.
-	GetVersionFunc func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, version string) (dpDatasetApiModels.Version, error)
+	GetVersionFunc func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, version string) (datasetApiModels.Version, error)
 
 	// GetVersionWithHeadersFunc mocks the GetVersionWithHeaders method.
-	GetVersionWithHeadersFunc func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, version string) (dpDatasetApiModels.Version, datasetApiSdk.ResponseHeaders, error)
+	GetVersionWithHeadersFunc func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, version string) (datasetApiModels.Version, datasetApiSdk.ResponseHeaders, error)
 
 	// GetVersionsInBatchesFunc mocks the GetVersionsInBatches method.
 	GetVersionsInBatchesFunc func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, batchSize int, maxWorkers int) (datasetApiSdk.VersionsList, error)
 
 	// PutDatasetFunc mocks the PutDataset method.
-	PutDatasetFunc func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, d dpDatasetApiModels.Dataset) error
+	PutDatasetFunc func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, d datasetApiModels.Dataset) error
 
 	// PutInstanceFunc mocks the PutInstance method.
 	PutInstanceFunc func(ctx context.Context, headers datasetApiSdk.Headers, instanceID string, i datasetApiSdk.UpdateInstance, ifMatch string) (string, error)
 
 	// PutMetadataFunc mocks the PutMetadata method.
-	PutMetadataFunc func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, version string, metadata dpDatasetApiModels.EditableMetadata, versionEtag string) error
+	PutMetadataFunc func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, version string, metadata datasetApiModels.EditableMetadata, versionEtag string) error
 
 	// PutVersionFunc mocks the PutVersion method.
-	PutVersionFunc func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, editionID string, versionID string, version dpDatasetApiModels.Version) (dpDatasetApiModels.Version, error)
+	PutVersionFunc func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, editionID string, versionID string, version datasetApiModels.Version) (datasetApiModels.Version, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -189,7 +190,7 @@ type DatasetAPIClientMock struct {
 			// DatasetID is the datasetID argument value.
 			DatasetID string
 			// D is the d argument value.
-			D dpDatasetApiModels.Dataset
+			D datasetApiModels.Dataset
 		}
 		// PutInstance holds details about calls to the PutInstance method.
 		PutInstance []struct {
@@ -217,7 +218,7 @@ type DatasetAPIClientMock struct {
 			// Version is the version argument value.
 			Version string
 			// Metadata is the metadata argument value.
-			Metadata dpDatasetApiModels.EditableMetadata
+			Metadata datasetApiModels.EditableMetadata
 			// VersionEtag is the versionEtag argument value.
 			VersionEtag string
 		}
@@ -234,7 +235,7 @@ type DatasetAPIClientMock struct {
 			// VersionID is the versionID argument value.
 			VersionID string
 			// Version is the version argument value.
-			Version dpDatasetApiModels.Version
+			Version datasetApiModels.Version
 		}
 	}
 	lockGetDatasetCurrentAndNext sync.RWMutex
@@ -251,7 +252,7 @@ type DatasetAPIClientMock struct {
 }
 
 // GetDatasetCurrentAndNext calls GetDatasetCurrentAndNextFunc.
-func (mock *DatasetAPIClientMock) GetDatasetCurrentAndNext(ctx context.Context, headers datasetApiSdk.Headers, datasetID string) (dpDatasetApiModels.DatasetUpdate, error) {
+func (mock *DatasetAPIClientMock) GetDatasetCurrentAndNext(ctx context.Context, headers datasetApiSdk.Headers, datasetID string) (datasetApiModels.DatasetUpdate, error) {
 	if mock.GetDatasetCurrentAndNextFunc == nil {
 		panic("DatasetAPIClientMock.GetDatasetCurrentAndNextFunc: method is nil but DatasetAPIClient.GetDatasetCurrentAndNext was just called")
 	}
@@ -335,7 +336,7 @@ func (mock *DatasetAPIClientMock) GetDatasetsInBatchesCalls() []struct {
 }
 
 // GetEdition calls GetEditionFunc.
-func (mock *DatasetAPIClientMock) GetEdition(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string) (dpDatasetApiModels.Edition, error) {
+func (mock *DatasetAPIClientMock) GetEdition(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string) (datasetApiModels.Edition, error) {
 	if mock.GetEditionFunc == nil {
 		panic("DatasetAPIClientMock.GetEditionFunc: method is nil but DatasetAPIClient.GetEdition was just called")
 	}
@@ -423,7 +424,7 @@ func (mock *DatasetAPIClientMock) GetEditionsCalls() []struct {
 }
 
 // GetVersion calls GetVersionFunc.
-func (mock *DatasetAPIClientMock) GetVersion(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, version string) (dpDatasetApiModels.Version, error) {
+func (mock *DatasetAPIClientMock) GetVersion(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, version string) (datasetApiModels.Version, error) {
 	if mock.GetVersionFunc == nil {
 		panic("DatasetAPIClientMock.GetVersionFunc: method is nil but DatasetAPIClient.GetVersion was just called")
 	}
@@ -471,7 +472,7 @@ func (mock *DatasetAPIClientMock) GetVersionCalls() []struct {
 }
 
 // GetVersionWithHeaders calls GetVersionWithHeadersFunc.
-func (mock *DatasetAPIClientMock) GetVersionWithHeaders(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, version string) (dpDatasetApiModels.Version, datasetApiSdk.ResponseHeaders, error) {
+func (mock *DatasetAPIClientMock) GetVersionWithHeaders(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, version string) (datasetApiModels.Version, datasetApiSdk.ResponseHeaders, error) {
 	if mock.GetVersionWithHeadersFunc == nil {
 		panic("DatasetAPIClientMock.GetVersionWithHeadersFunc: method is nil but DatasetAPIClient.GetVersionWithHeaders was just called")
 	}
@@ -571,7 +572,7 @@ func (mock *DatasetAPIClientMock) GetVersionsInBatchesCalls() []struct {
 }
 
 // PutDataset calls PutDatasetFunc.
-func (mock *DatasetAPIClientMock) PutDataset(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, d dpDatasetApiModels.Dataset) error {
+func (mock *DatasetAPIClientMock) PutDataset(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, d datasetApiModels.Dataset) error {
 	if mock.PutDatasetFunc == nil {
 		panic("DatasetAPIClientMock.PutDatasetFunc: method is nil but DatasetAPIClient.PutDataset was just called")
 	}
@@ -579,7 +580,7 @@ func (mock *DatasetAPIClientMock) PutDataset(ctx context.Context, headers datase
 		Ctx       context.Context
 		Headers   datasetApiSdk.Headers
 		DatasetID string
-		D         dpDatasetApiModels.Dataset
+		D         datasetApiModels.Dataset
 	}{
 		Ctx:       ctx,
 		Headers:   headers,
@@ -600,13 +601,13 @@ func (mock *DatasetAPIClientMock) PutDatasetCalls() []struct {
 	Ctx       context.Context
 	Headers   datasetApiSdk.Headers
 	DatasetID string
-	D         dpDatasetApiModels.Dataset
+	D         datasetApiModels.Dataset
 } {
 	var calls []struct {
 		Ctx       context.Context
 		Headers   datasetApiSdk.Headers
 		DatasetID string
-		D         dpDatasetApiModels.Dataset
+		D         datasetApiModels.Dataset
 	}
 	mock.lockPutDataset.RLock()
 	calls = mock.calls.PutDataset
@@ -663,7 +664,7 @@ func (mock *DatasetAPIClientMock) PutInstanceCalls() []struct {
 }
 
 // PutMetadata calls PutMetadataFunc.
-func (mock *DatasetAPIClientMock) PutMetadata(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, version string, metadata dpDatasetApiModels.EditableMetadata, versionEtag string) error {
+func (mock *DatasetAPIClientMock) PutMetadata(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, edition string, version string, metadata datasetApiModels.EditableMetadata, versionEtag string) error {
 	if mock.PutMetadataFunc == nil {
 		panic("DatasetAPIClientMock.PutMetadataFunc: method is nil but DatasetAPIClient.PutMetadata was just called")
 	}
@@ -673,7 +674,7 @@ func (mock *DatasetAPIClientMock) PutMetadata(ctx context.Context, headers datas
 		DatasetID   string
 		Edition     string
 		Version     string
-		Metadata    dpDatasetApiModels.EditableMetadata
+		Metadata    datasetApiModels.EditableMetadata
 		VersionEtag string
 	}{
 		Ctx:         ctx,
@@ -700,7 +701,7 @@ func (mock *DatasetAPIClientMock) PutMetadataCalls() []struct {
 	DatasetID   string
 	Edition     string
 	Version     string
-	Metadata    dpDatasetApiModels.EditableMetadata
+	Metadata    datasetApiModels.EditableMetadata
 	VersionEtag string
 } {
 	var calls []struct {
@@ -709,7 +710,7 @@ func (mock *DatasetAPIClientMock) PutMetadataCalls() []struct {
 		DatasetID   string
 		Edition     string
 		Version     string
-		Metadata    dpDatasetApiModels.EditableMetadata
+		Metadata    datasetApiModels.EditableMetadata
 		VersionEtag string
 	}
 	mock.lockPutMetadata.RLock()
@@ -719,7 +720,7 @@ func (mock *DatasetAPIClientMock) PutMetadataCalls() []struct {
 }
 
 // PutVersion calls PutVersionFunc.
-func (mock *DatasetAPIClientMock) PutVersion(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, editionID string, versionID string, version dpDatasetApiModels.Version) (dpDatasetApiModels.Version, error) {
+func (mock *DatasetAPIClientMock) PutVersion(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, editionID string, versionID string, version datasetApiModels.Version) (datasetApiModels.Version, error) {
 	if mock.PutVersionFunc == nil {
 		panic("DatasetAPIClientMock.PutVersionFunc: method is nil but DatasetAPIClient.PutVersion was just called")
 	}
@@ -729,7 +730,7 @@ func (mock *DatasetAPIClientMock) PutVersion(ctx context.Context, headers datase
 		DatasetID string
 		EditionID string
 		VersionID string
-		Version   dpDatasetApiModels.Version
+		Version   datasetApiModels.Version
 	}{
 		Ctx:       ctx,
 		Headers:   headers,
@@ -754,7 +755,7 @@ func (mock *DatasetAPIClientMock) PutVersionCalls() []struct {
 	DatasetID string
 	EditionID string
 	VersionID string
-	Version   dpDatasetApiModels.Version
+	Version   datasetApiModels.Version
 } {
 	var calls []struct {
 		Ctx       context.Context
@@ -762,7 +763,7 @@ func (mock *DatasetAPIClientMock) PutVersionCalls() []struct {
 		DatasetID string
 		EditionID string
 		VersionID string
-		Version   dpDatasetApiModels.Version
+		Version   datasetApiModels.Version
 	}
 	mock.lockPutVersion.RLock()
 	calls = mock.calls.PutVersion

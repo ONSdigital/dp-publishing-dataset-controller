@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	dpDatasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
+	datasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
 	datasetApiSdk "github.com/ONSdigital/dp-dataset-api/sdk"
 
 	"github.com/ONSdigital/dp-publishing-dataset-controller/model"
@@ -12,7 +12,7 @@ import (
 )
 
 // AllEditions maps dataset and editions response to editions list page model
-func AllEditions(ctx context.Context, dataset dpDatasetApiModels.DatasetUpdate, editions datasetApiSdk.EditionsList, latestVersions map[string]string) model.EditionsPage {
+func AllEditions(ctx context.Context, dataset datasetApiModels.DatasetUpdate, editions datasetApiSdk.EditionsList, latestVersions map[string]string) model.EditionsPage {
 	mappedEditions := make([]model.Edition, len(editions.Items))
 	for i := range editions.Items {
 		var timeF string

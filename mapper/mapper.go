@@ -10,7 +10,7 @@ import (
 
 	dataset "github.com/ONSdigital/dp-api-clients-go/v2/dataset"
 	zebedee "github.com/ONSdigital/dp-api-clients-go/v2/zebedee"
-	dpDatasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
+	datasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
 	datasetApiSdk "github.com/ONSdigital/dp-dataset-api/sdk"
 	babbageclient "github.com/ONSdigital/dp-publishing-dataset-controller/clients/topics"
 	"github.com/ONSdigital/dp-publishing-dataset-controller/model"
@@ -44,7 +44,7 @@ func AllDatasets(datasets datasetApiSdk.DatasetsList) []model.Dataset {
 	return mappedDatasets
 }
 
-func AllVersions(ctx context.Context, datasetUpdate dpDatasetApiModels.DatasetUpdate, edition dpDatasetApiModels.Edition, versions datasetApiSdk.VersionsList) model.VersionsPage {
+func AllVersions(ctx context.Context, datasetUpdate datasetApiModels.DatasetUpdate, edition datasetApiModels.Edition, versions datasetApiSdk.VersionsList) model.VersionsPage {
 	datasetName := datasetUpdate.Next.Title
 	editionName := edition.Edition
 	mappedVersions := make([]model.Version, len(versions.Items))
@@ -81,7 +81,7 @@ func AllVersions(ctx context.Context, datasetUpdate dpDatasetApiModels.DatasetUp
 	}
 }
 
-func EditMetadata(d *dpDatasetApiModels.Dataset, v dpDatasetApiModels.Version, dim []dpDatasetApiModels.Dimension, c zebedee.Collection) model.EditMetadata {
+func EditMetadata(d *datasetApiModels.Dataset, v datasetApiModels.Version, dim []datasetApiModels.Dimension, c zebedee.Collection) model.EditMetadata {
 	mappedMetadata := model.EditMetadata{
 		Dataset:      *d,
 		Version:      v,
@@ -102,8 +102,8 @@ func EditMetadata(d *dpDatasetApiModels.Dataset, v dpDatasetApiModels.Version, d
 }
 
 // PutMetadata transform an EditMetadata object to the EditableMetadata as expected by dataset api
-func PutMetadata(m model.EditMetadata) dpDatasetApiModels.EditableMetadata {
-	metadata := dpDatasetApiModels.EditableMetadata{
+func PutMetadata(m model.EditMetadata) datasetApiModels.EditableMetadata {
+	metadata := datasetApiModels.EditableMetadata{
 		CanonicalTopic:    m.Dataset.CanonicalTopic,
 		Description:       m.Dataset.Description,
 		Dimensions:        m.Version.Dimensions,

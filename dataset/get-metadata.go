@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	zebedeeclient "github.com/ONSdigital/dp-api-clients-go/v2/zebedee"
-	dpDatasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
+	datasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
 	datasetApiSdk "github.com/ONSdigital/dp-dataset-api/sdk"
 	dphandlers "github.com/ONSdigital/dp-net/v3/handlers"
 	"github.com/ONSdigital/dp-publishing-dataset-controller/mapper"
@@ -78,7 +78,7 @@ func getEditMetadataHandler(w http.ResponseWriter, req *http.Request, dc Dataset
 	// if the version state is "edition-confirmed" it's in a pre-edited state so we get previously
 	// published version's dimensions and return those so that they are pre-populated in the browser
 	// to prevent the user having to fill these in again
-	dims := []dpDatasetApiModels.Dimension{}
+	dims := []datasetApiModels.Dimension{}
 	if v.State == editionConfirmedState && v.Version > 1 {
 		dimensions := getLatestPublishedVersionDimensions(ctx, w, req, dc, headers, d.Current.Links.LatestVersion.HRef)
 		dims = append(dims, dimensions...)
@@ -122,18 +122,18 @@ func getCollectionDetails(ctx context.Context, zc ZebedeeClient, userAccessToken
 	}
 }
 
-func getLatestPublishedVersionDimensions(ctx context.Context, w http.ResponseWriter, req *http.Request, dc DatasetAPIClient, headers datasetApiSdk.Headers, latestVersionURL string) []dpDatasetApiModels.Dimension {
+func getLatestPublishedVersionDimensions(ctx context.Context, w http.ResponseWriter, req *http.Request, dc DatasetAPIClient, headers datasetApiSdk.Headers, latestVersionURL string) []datasetApiModels.Dimension {
 	datasetID, editionID, versionID, err := getIDsFromURL(latestVersionURL)
 	if err != nil {
 		log.Error(ctx, "failed to parse latest version url", err)
-		return []dpDatasetApiModels.Dimension{}
+		return []datasetApiModels.Dimension{}
 	}
 
 	latestPublishedVersion, err := dc.GetVersion(ctx, headers, datasetID, editionID, versionID)
 	if err != nil {
 		log.Error(ctx, "failed Get latest published version details", err)
 		setErrorStatusCode(req, w, err, datasetID)
-		return []dpDatasetApiModels.Dimension{}
+		return []datasetApiModels.Dimension{}
 	}
 
 	return latestPublishedVersion.Dimensions
