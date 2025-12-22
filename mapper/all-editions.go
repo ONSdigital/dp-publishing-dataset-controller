@@ -13,25 +13,24 @@ import (
 
 // AllEditions maps dataset and editions response to editions list page model
 func AllEditions(ctx context.Context, dataset dpDatasetApiModels.DatasetUpdate, editions datasetApiSdk.EditionsList, latestVersions map[string]string) model.EditionsPage {
-	var mappedEditions []model.Edition
-	for _, e := range editions.Items {
+	mappedEditions := make([]model.Edition, len(editions.Items))
+	for i := range editions.Items {
 		var timeF string
 		for k, latestVersion := range latestVersions {
-			if k == e.Edition {
-				time, err := time.Parse("2006-01-02T15:04:05Z", latestVersion)
+			if k == editions.Items[i].Edition {
+				timeParse, err := time.Parse("2006-01-02T15:04:05Z", latestVersion)
 				if err != nil {
 					log.Warn(ctx, "failed to parse release date", log.FormatErrors([]error{err}))
 				} else {
-					timeF = time.Format("02 January 2006")
+					timeF = timeParse.Format("02 January 2006")
 				}
 			}
 		}
-		mappedEditions = append(mappedEditions, model.Edition{
-			ID:          e.Edition,
-			Title:       e.Edition,
+		mappedEditions[i] = model.Edition{
+			ID:          editions.Items[i].Edition,
+			Title:       editions.Items[i].Edition,
 			ReleaseDate: timeF,
-		})
-
+		}
 	}
 
 	return model.EditionsPage{

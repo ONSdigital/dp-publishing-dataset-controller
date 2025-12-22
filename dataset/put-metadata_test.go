@@ -23,12 +23,10 @@ var (
 )
 
 func TestUnitPutMetadata(t *testing.T) {
-
 	b := metadataBody
 
 	Convey("test putMetadata", t, func() {
 		Convey("on success", func() {
-
 			mockDatasetClient := &DatasetAPIClientMock{
 				PutDatasetFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, d dpDatasetApiModels.Dataset) error {
 					return nil
@@ -65,7 +63,6 @@ func TestUnitPutMetadata(t *testing.T) {
 		})
 
 		Convey("errors if no headers are passed", func() {
-
 			mockDatasetClient := &DatasetAPIClientMock{
 				PutDatasetFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, d dpDatasetApiModels.Dataset) error {
 					return nil
@@ -128,7 +125,6 @@ func TestUnitPutMetadata(t *testing.T) {
 		})
 
 		Convey("handles error from dataset client", func() {
-
 			mockDatasetClient := &DatasetAPIClientMock{
 				PutDatasetFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, d dpDatasetApiModels.Dataset) error {
 					return errors.New("test dataset API error")
@@ -164,7 +160,6 @@ func TestUnitPutMetadata(t *testing.T) {
 				response := rec.Body.String()
 				So(response, ShouldResemble, "error updating dataset\n")
 			})
-
 		})
 	})
 }
@@ -226,7 +221,6 @@ func TestUnitPutEditableMetadata(t *testing.T) {
 		}
 
 		Convey("And a router using the PutEditableMetadata handler", func() {
-
 			florenceToken := "testuser"
 
 			datasetClient := &DatasetAPIClientMock{
@@ -304,7 +298,6 @@ func TestUnitPutEditableMetadata(t *testing.T) {
 				req.Header.Set("Collection-Id", mockCollectionId)
 				req.Header.Set("Access-Token", florenceToken)
 				req.Header.Set("X-Florence-Token", florenceToken) // needed for the zebedee check
-				//req.Header.Set("Authorization", "testuser")    // needed for the zebedee check
 
 				Convey("And the version etag is wrong", func() {
 					etag = "wrong"

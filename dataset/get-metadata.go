@@ -108,11 +108,10 @@ func getEditMetadataHandler(w http.ResponseWriter, req *http.Request, dc Dataset
 		setErrorStatusCode(req, w, err, datasetID)
 		return
 	}
-
 }
 
 func getCollectionDetails(ctx context.Context, zc ZebedeeClient, userAccessToken, collectionID string) (zebedeeclient.Collection, error) {
-	if len(collectionID) > 0 {
+	if collectionID != "" {
 		c, err := zc.GetCollection(ctx, userAccessToken, collectionID)
 		if err != nil {
 			return zebedeeclient.Collection{}, err
@@ -140,8 +139,8 @@ func getLatestPublishedVersionDimensions(ctx context.Context, w http.ResponseWri
 	return latestPublishedVersion.Dimensions
 }
 
-func getIDsFromURL(URL string) (datasetID, editionID, versionID string, err error) {
-	parsedURL, err := url.Parse(URL)
+func getIDsFromURL(urlValue string) (datasetID, editionID, versionID string, err error) {
+	parsedURL, err := url.Parse(urlValue)
 	if err != nil {
 		return "", "", "", err
 	}

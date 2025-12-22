@@ -82,11 +82,9 @@ func main() {
 
 	hc.Start(ctx)
 
-	// Block until a fatal error occurs
-	select {
-	case signal := <-signals:
-		log.Info(ctx, "quitting after os signal received", log.Data{"signal": signal})
-	}
+	// Block until a signal is called to shutdown application
+	osSignal := <-signals
+	log.Info(ctx, "quitting after os signal received", log.Data{"signal": osSignal})
 
 	log.Info(ctx, fmt.Sprintf("shutdown with timeout: %s", cfg.GracefulShutdownTimeout))
 

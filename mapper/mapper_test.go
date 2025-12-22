@@ -18,13 +18,11 @@ func TestUnitMapper(t *testing.T) {
 	t.Parallel()
 	Convey("test AllDatasets", t, func() {
 		var datasetItems []models.DatasetUpdate
-		datasetItems = append(datasetItems, models.DatasetUpdate{ID: "test-id-1", Next: &models.Dataset{Title: "test title 1"}})
-		datasetItems = append(datasetItems, models.DatasetUpdate{ID: "test-id-2", Next: &models.Dataset{Title: "test title 2"}})
-		datasetItems = append(datasetItems, models.DatasetUpdate{ID: "test-id-3"})
+		datasetItems = append(datasetItems, models.DatasetUpdate{ID: "test-id-1", Next: &models.Dataset{Title: "test title 1"}}, models.DatasetUpdate{ID: "test-id-2", Next: &models.Dataset{Title: "test title 2"}}, models.DatasetUpdate{ID: "test-id-3"})
 
 		var ds datasetApiSdk.DatasetsList
 
-		ds.Items = append(ds.Items, datasetItems...)
+		ds.Items = datasetItems
 
 		mapped := AllDatasets(ds)
 
@@ -37,9 +35,7 @@ func TestUnitMapper(t *testing.T) {
 
 	Convey("that datasets are ordered alphabetically by Title", t, func() {
 		var datasetItems []models.DatasetUpdate
-		datasetItems = append(datasetItems, models.DatasetUpdate{ID: "test-id-3", Next: &models.Dataset{Title: "3rd Title"}})
-		datasetItems = append(datasetItems, models.DatasetUpdate{ID: "test-id-1", Next: &models.Dataset{Title: "1st Title"}})
-		datasetItems = append(datasetItems, models.DatasetUpdate{ID: "test-id-2", Next: &models.Dataset{Title: "2nd Title"}})
+		datasetItems = append(datasetItems, models.DatasetUpdate{ID: "test-id-3", Next: &models.Dataset{Title: "3rd Title"}}, models.DatasetUpdate{ID: "test-id-1", Next: &models.Dataset{Title: "1st Title"}}, models.DatasetUpdate{ID: "test-id-2", Next: &models.Dataset{Title: "2nd Title"}})
 
 		var ds datasetApiSdk.DatasetsList
 
@@ -55,10 +51,7 @@ func TestUnitMapper(t *testing.T) {
 
 	Convey("that datasets with an empty title are still sorted alphabetically using their ID instead", t, func() {
 		var datasetItems []models.DatasetUpdate
-		datasetItems = append(datasetItems, models.DatasetUpdate{ID: "test-id-4", Next: &models.Dataset{Title: "DFG"}})
-		datasetItems = append(datasetItems, models.DatasetUpdate{ID: "test-id-1", Next: &models.Dataset{Title: ""}})
-		datasetItems = append(datasetItems, models.DatasetUpdate{ID: "test-id-2", Next: &models.Dataset{Title: ""}})
-		datasetItems = append(datasetItems, models.DatasetUpdate{ID: "test-id-3", Next: &models.Dataset{Title: "ABC"}})
+		datasetItems = append(datasetItems, models.DatasetUpdate{ID: "test-id-4", Next: &models.Dataset{Title: "DFG"}}, models.DatasetUpdate{ID: "test-id-1", Next: &models.Dataset{Title: ""}}, models.DatasetUpdate{ID: "test-id-2", Next: &models.Dataset{Title: ""}}, models.DatasetUpdate{ID: "test-id-3", Next: &models.Dataset{Title: "ABC"}})
 
 		var ds datasetApiSdk.DatasetsList
 
@@ -74,12 +67,8 @@ func TestUnitMapper(t *testing.T) {
 	})
 
 	Convey("that datasets are ordered correctly regardless of casing in the ID or Title fields", t, func() {
-
 		var datasetItems []models.DatasetUpdate
-		datasetItems = append(datasetItems, models.DatasetUpdate{ID: "test-id-4", Next: &models.Dataset{Title: "dfg"}})
-		datasetItems = append(datasetItems, models.DatasetUpdate{ID: "Test-id-1", Next: &models.Dataset{Title: ""}})
-		datasetItems = append(datasetItems, models.DatasetUpdate{ID: "test-id-2", Next: &models.Dataset{Title: "ABC"}})
-		datasetItems = append(datasetItems, models.DatasetUpdate{ID: "test-id-3", Next: &models.Dataset{Title: "123"}})
+		datasetItems = append(datasetItems, models.DatasetUpdate{ID: "test-id-4", Next: &models.Dataset{Title: "dfg"}}, models.DatasetUpdate{ID: "Test-id-1", Next: &models.Dataset{Title: ""}}, models.DatasetUpdate{ID: "test-id-2", Next: &models.Dataset{Title: "ABC"}}, models.DatasetUpdate{ID: "test-id-3", Next: &models.Dataset{Title: "123"}})
 
 		var ds datasetApiSdk.DatasetsList
 
@@ -319,7 +308,6 @@ func TestMetadata(t *testing.T) {
 		}
 
 		Convey("And a zebedee collection", func() {
-
 			datasetCollectionItem := zebedee.CollectionItem{
 				ID:           mockDatasetDetails.ID,
 				State:        "inProgress",
@@ -355,7 +343,6 @@ func TestMetadata(t *testing.T) {
 		Convey("And an empty EditMetadata", func() {
 			editMetadata := model.EditMetadata{}
 			Convey("When we call PutMetadata", func() {
-
 				editableMetadataObj := PutMetadata(editMetadata)
 
 				Convey("Then it returns an object with all the editable metadata fields populated", func() {
@@ -392,7 +379,6 @@ func TestMetadata(t *testing.T) {
 				Version: mockVersion,
 			}
 			Convey("When we call PutMetadata", func() {
-
 				editableMetadataObj := PutMetadata(editMetadata)
 
 				Convey("Then it returns an object with all the editable metadata fields populated", func() {

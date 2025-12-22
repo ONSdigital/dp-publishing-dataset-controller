@@ -11,7 +11,6 @@ import (
 	dpDatasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
 	datasetApiSdk "github.com/ONSdigital/dp-dataset-api/sdk"
 
-	"github.com/ONSdigital/dp-api-clients-go/v2/zebedee"
 	zebedeeclient "github.com/ONSdigital/dp-api-clients-go/v2/zebedee"
 	"github.com/ONSdigital/dp-publishing-dataset-controller/model"
 	"github.com/golang/mock/gomock"
@@ -39,15 +38,13 @@ func TestUnitHandlers(t *testing.T) {
 	t.Parallel()
 	const mockUserAuthToken = "testuser"
 	const mockDatasetID = "bar"
-	const mockEdition = "baz"
-	const mockVersionNum = "1"
 	const mockCollectionId = "test-collection"
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
 	Convey("test setStatusCode", t, func() {
 		Convey("test status code handles 404 response from client", func() {
-			req := httptest.NewRequest("GET", "http://localhost:24000", nil)
+			req := httptest.NewRequest("GET", "http://localhost:24000", http.NoBody)
 			w := httptest.NewRecorder()
 			err := &testCliError{}
 			setErrorStatusCode(req, w, err, mockDatasetID)
@@ -57,7 +54,6 @@ func TestUnitHandlers(t *testing.T) {
 	})
 
 	Convey("test getEditMetadataHandler", t, func() {
-
 		mockDatasetDetails := dpDatasetApiModels.Dataset{
 			ID:           "test-dataset",
 			CollectionID: mockCollectionId,
@@ -74,15 +70,15 @@ func TestUnitHandlers(t *testing.T) {
 			Version: 1,
 		}
 
-		datasetCollectionItem := zebedee.CollectionItem{
+		datasetCollectionItem := zebedeeclient.CollectionItem{
 			ID:           mockDatasetDetails.ID,
 			State:        "inProgress",
 			LastEditedBy: "an-user",
 		}
 
-		mockCollection := zebedee.Collection{
+		mockCollection := zebedeeclient.Collection{
 			ID: mockCollectionId,
-			Datasets: []zebedee.CollectionItem{
+			Datasets: []zebedeeclient.CollectionItem{
 
 				{
 					ID:           "foo",
@@ -120,7 +116,7 @@ func TestUnitHandlers(t *testing.T) {
 		Convey("when Version.State is NOT edition-confirmed returns correctly with empty dimensions struct", func() {
 			mockVersionDetails.State = "associated"
 
-			req := httptest.NewRequest("GET", "/datasets/bar/editions/baz/versions/1", nil)
+			req := httptest.NewRequest("GET", "/datasets/bar/editions/baz/versions/1", http.NoBody)
 			req.Header.Set("Collection-Id", mockCollectionId)
 			req.Header.Set("X-Florence-Token", mockUserAuthToken)
 			w := doTestRequest("/datasets/{datasetID}/editions/{editionID}/versions/{versionID}", req, GetMetadataHandler(mockDatasetClient, mockZebedeeClient), nil)
@@ -146,7 +142,7 @@ func TestUnitHandlers(t *testing.T) {
 
 			mockVersionDetails.Dimensions = []dpDatasetApiModels.Dimension{{ID: "dim001", Label: "Test dimension"}}
 
-			req := httptest.NewRequest("GET", "/datasets/bar/editions/baz/versions/1", nil)
+			req := httptest.NewRequest("GET", "/datasets/bar/editions/baz/versions/1", http.NoBody)
 			req.Header.Set("Collection-Id", mockCollectionId)
 			req.Header.Set("X-Florence-Token", mockUserAuthToken)
 			w := doTestRequest("/datasets/{datasetID}/editions/{editionID}/versions/{versionID}", req, GetMetadataHandler(mockDatasetClient, mockZebedeeClient), nil)

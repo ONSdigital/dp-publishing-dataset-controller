@@ -61,19 +61,19 @@ func getEditions(w http.ResponseWriter, req *http.Request, dc DatasetAPIClient, 
 	}
 
 	latestVersionInEdition := make(map[string]string)
-	for _, edition := range editions.Items {
-		_, _, versionID, err := getIDsFromURL(edition.Links.LatestVersion.HRef)
+	for e := range editions.Items {
+		_, _, versionID, err := getIDsFromURL(editions.Items[e].Links.LatestVersion.HRef)
 		if err != nil {
-			latestVersionInEdition[edition.Edition] = ""
+			latestVersionInEdition[editions.Items[e].Edition] = ""
 			continue
 		}
-		version, err := dc.GetVersion(ctx, headers, datasetID, edition.Edition, versionID)
-		if err != nil {
-			latestVersionInEdition[edition.Edition] = ""
-			continue
-		}
-		latestVersionInEdition[edition.Edition] = version.ReleaseDate
 
+		version, err := dc.GetVersion(ctx, headers, datasetID, editions.Items[e].Edition, versionID)
+		if err != nil {
+			latestVersionInEdition[editions.Items[e].Edition] = ""
+			continue
+		}
+		latestVersionInEdition[editions.Items[e].Edition] = version.ReleaseDate
 	}
 
 	mapped := mapper.AllEditions(ctx, dataset, editions, latestVersionInEdition)
@@ -85,7 +85,12 @@ func getEditions(w http.ResponseWriter, req *http.Request, dc DatasetAPIClient, 
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(b)
+	_, err = w.Write(b)
+	if err != nil {
+		log.Error(ctx, "error writing response", err)
+		http.Error(w, "error writing response", http.StatusInternalServerError)
+		return
+	}
 
 	log.Info(ctx, "get editions: request successful", log.Data(logInfo))
 }

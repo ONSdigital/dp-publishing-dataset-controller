@@ -96,10 +96,16 @@ func putMetadata(w http.ResponseWriter, req *http.Request, dc DatasetAPIClient, 
 	if err != nil {
 		log.Error(ctx, "error adding version to collection", err, log.Data(logInfo))
 		http.Error(w, "error adding version to collection", http.StatusInternalServerError)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write(b)
+	_, err = w.Write(b)
+	if err != nil {
+		log.Error(ctx, "error writing response", err)
+		http.Error(w, "error writing response", http.StatusInternalServerError)
+		return
+	}
 
 	log.Info(ctx, "put metadata: request successful", log.Data(logInfo))
 }

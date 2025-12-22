@@ -2,7 +2,6 @@ package dataset
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	datasetApiSdk "github.com/ONSdigital/dp-dataset-api/sdk"
@@ -22,8 +21,6 @@ func GetAll(dc DatasetAPIClient, batchSize, maxWorkers int) http.HandlerFunc {
 func getAll(w http.ResponseWriter, req *http.Request, dc DatasetAPIClient, userAccessToken, collectionID, lang string, batchSize, maxWorkers int) {
 	ctx := req.Context()
 
-	fmt.Println("THE USER ACCESS TOKEN IS")
-	fmt.Println(userAccessToken)
 	err := checkAccessTokenAndCollectionHeaders(userAccessToken, collectionID)
 	if err != nil {
 		log.Error(ctx, err.Error(), err)
@@ -54,7 +51,12 @@ func getAll(w http.ResponseWriter, req *http.Request, dc DatasetAPIClient, userA
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(b)
+	_, err = w.Write(b)
+	if err != nil {
+		log.Error(ctx, "error writing response", err)
+		http.Error(w, "error writing response", http.StatusInternalServerError)
+		return
+	}
 
 	log.Info(ctx, "get all: request successful")
 }
