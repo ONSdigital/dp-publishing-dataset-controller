@@ -99,8 +99,16 @@ func putMetadata(w http.ResponseWriter, req *http.Request, dc DatasetAPIClient, 
 		return
 	}
 
+	responseBody, err := json.Marshal(body)
+	if err != nil {
+		log.Error(ctx, "error marshalling response", err, log.Data(logInfo))
+		http.Error(w, "error marshalling response", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_, err = w.Write(b)
+	_, err = w.Write(responseBody)
 	if err != nil {
 		log.Error(ctx, "error writing response", err)
 		http.Error(w, "error writing response", http.StatusInternalServerError)

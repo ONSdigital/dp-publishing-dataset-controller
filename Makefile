@@ -27,3 +27,7 @@ test:
 .PHONY: lint 
 lint: 
 	golangci-lint run ./... --build-tags 'production'
+
+.PHONY: test-component
+test-component:
+	exit
