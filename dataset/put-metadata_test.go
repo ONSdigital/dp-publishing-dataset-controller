@@ -10,10 +10,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gorilla/mux"
-
-	datasetclient "github.com/ONSdigital/dp-api-clients-go/v2/dataset"
+	datasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
+	datasetApiSdk "github.com/ONSdigital/dp-dataset-api/sdk"
 	"github.com/ONSdigital/dp-publishing-dataset-controller/model"
+	"github.com/gorilla/mux"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -23,20 +23,18 @@ var (
 )
 
 func TestUnitPutMetadata(t *testing.T) {
-
 	b := metadataBody
 
 	Convey("test putMetadata", t, func() {
 		Convey("on success", func() {
-
-			mockDatasetClient := &DatasetClientMock{
-				PutDatasetFunc: func(ctx context.Context, userAuthToken, serviceAuthToken, collectionID, datasetID string, d datasetclient.DatasetDetails) error {
+			mockDatasetClient := &DatasetAPIClientMock{
+				PutDatasetFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, d datasetApiModels.Dataset) error {
 					return nil
 				},
-				PutVersionFunc: func(ctx context.Context, userAuthToken, serviceAuthToken, collectionID, datasetID, edition, version string, v datasetclient.Version) error {
-					return nil
+				PutVersionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition, version string, v datasetApiModels.Version) (datasetApiModels.Version, error) {
+					return datasetApiModels.Version{}, nil
 				},
-				PutInstanceFunc: func(ctx context.Context, userAuthToken, serviceAuthToken, collectionID, instanceID string, i datasetclient.UpdateInstance, ifMatch string) (string, error) {
+				PutInstanceFunc: func(ctx context.Context, headers datasetApiSdk.Headers, instanceID string, i datasetApiSdk.UpdateInstance, ifMatch string) (string, error) {
 					return "", nil
 				},
 			}
@@ -52,7 +50,8 @@ func TestUnitPutMetadata(t *testing.T) {
 
 			req := httptest.NewRequest("PUT", "/datasets/test-dataset/editions/test-edition/versions/1", bytes.NewBufferString(b))
 			req.Header.Set("Collection-Id", "testcollection")
-			req.Header.Set("X-Florence-Token", "testuser")
+			req.Header.Set("AccessToken", "testuser")
+			req.Header.Set("X-Florence-Token", "testuser") // needed for the zebedee check
 			rec := httptest.NewRecorder()
 			router := mux.NewRouter()
 			router.Path("/datasets/{datasetID}/editions/{editionID}/versions/{versionID}").HandlerFunc(PutMetadata(mockDatasetClient, mockZebedeeClient))
@@ -64,15 +63,14 @@ func TestUnitPutMetadata(t *testing.T) {
 		})
 
 		Convey("errors if no headers are passed", func() {
-
-			mockDatasetClient := &DatasetClientMock{
-				PutDatasetFunc: func(ctx context.Context, userAuthToken, serviceAuthToken, collectionID, datasetID string, d datasetclient.DatasetDetails) error {
+			mockDatasetClient := &DatasetAPIClientMock{
+				PutDatasetFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, d datasetApiModels.Dataset) error {
 					return nil
 				},
-				PutVersionFunc: func(ctx context.Context, userAuthToken, serviceAuthToken, collectionID, datasetID, edition, version string, v datasetclient.Version) error {
-					return nil
+				PutVersionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition, version string, v datasetApiModels.Version) (datasetApiModels.Version, error) {
+					return datasetApiModels.Version{}, nil
 				},
-				PutInstanceFunc: func(ctx context.Context, userAuthToken, serviceAuthToken, collectionID, instanceID string, i datasetclient.UpdateInstance, ifMatch string) (string, error) {
+				PutInstanceFunc: func(ctx context.Context, headers datasetApiSdk.Headers, instanceID string, i datasetApiSdk.UpdateInstance, ifMatch string) (string, error) {
 					return "", nil
 				},
 			}
@@ -88,7 +86,8 @@ func TestUnitPutMetadata(t *testing.T) {
 
 			Convey("collection id not set", func() {
 				req := httptest.NewRequest("PUT", "/datasets/test-dataset/editions/test-edition/versions/1", bytes.NewBufferString(b))
-				req.Header.Set("X-Florence-Token", "testuser")
+				req.Header.Set("AccessToken", "testuser")
+				req.Header.Set("X-Florence-Token", "testuser") // needed for the zebedee check
 				rec := httptest.NewRecorder()
 				router := mux.NewRouter()
 				router.Path("/datasets/{datasetID}/editions/{editionID}/versions/{versionID}").HandlerFunc(PutMetadata(mockDatasetClient, mockZebedeeClient))
@@ -126,15 +125,14 @@ func TestUnitPutMetadata(t *testing.T) {
 		})
 
 		Convey("handles error from dataset client", func() {
-
-			mockDatasetClient := &DatasetClientMock{
-				PutDatasetFunc: func(ctx context.Context, userAuthToken, serviceAuthToken, collectionID, datasetID string, d datasetclient.DatasetDetails) error {
+			mockDatasetClient := &DatasetAPIClientMock{
+				PutDatasetFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, d datasetApiModels.Dataset) error {
 					return errors.New("test dataset API error")
 				},
-				PutVersionFunc: func(ctx context.Context, userAuthToken, serviceAuthToken, collectionID, datasetID, edition, version string, v datasetclient.Version) error {
-					return nil
+				PutVersionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition, version string, v datasetApiModels.Version) (datasetApiModels.Version, error) {
+					return datasetApiModels.Version{}, nil
 				},
-				PutInstanceFunc: func(ctx context.Context, userAuthToken, serviceAuthToken, collectionID, instanceID string, i datasetclient.UpdateInstance, ifMatch string) (string, error) {
+				PutInstanceFunc: func(ctx context.Context, headers datasetApiSdk.Headers, instanceID string, i datasetApiSdk.UpdateInstance, ifMatch string) (string, error) {
 					return "", nil
 				},
 			}
@@ -150,7 +148,8 @@ func TestUnitPutMetadata(t *testing.T) {
 
 			req := httptest.NewRequest("PUT", "/datasets/test-dataset/editions/test-edition/versions/1", bytes.NewBufferString(b))
 			req.Header.Set("Collection-Id", "testcollection")
-			req.Header.Set("X-Florence-Token", "testuser")
+			req.Header.Set("AccessToken", "testuser")
+			req.Header.Set("X-Florence-Token", "testuser") // needed for the zebedee check
 			rec := httptest.NewRecorder()
 			router := mux.NewRouter()
 			router.Path("/datasets/{datasetID}/editions/{editionID}/versions/{versionID}").HandlerFunc(PutMetadata(mockDatasetClient, mockZebedeeClient))
@@ -161,7 +160,6 @@ func TestUnitPutMetadata(t *testing.T) {
 				response := rec.Body.String()
 				So(response, ShouldResemble, "error updating dataset\n")
 			})
-
 		})
 	})
 }
@@ -174,62 +172,63 @@ func TestUnitPutEditableMetadata(t *testing.T) {
 		mockCollectionId := "testcollection"
 		etag := "versionEtag"
 
+		nationalStatistic := new(bool)
+		*nationalStatistic = true
+
 		metadata := model.EditMetadata{
-			Dataset: datasetclient.DatasetDetails{
+			Dataset: datasetApiModels.Dataset{
 				ID:           mockDatasetId,
 				CollectionID: mockCollectionId,
-				Contacts: &[]datasetclient.Contact{{
+				Contacts: []datasetApiModels.ContactDetails{{
 					Name:      "contact",
 					Email:     "contact@ons.gov.uk",
 					Telephone: "029",
 				}},
 				Description: "dataset description",
-				Keywords:    &[]string{"one", "two"},
+				Keywords:    []string{"one", "two"},
 				License:     "license",
-				Methodologies: &[]datasetclient.Methodology{
+				Methodologies: []datasetApiModels.GeneralDetails{
 					{
 						Title:       "methodology",
 						Description: "methodology description",
-						URL:         "methodology url",
+						HRef:        "methodology url",
 					},
 				},
-				NationalStatistic: true,
+				NationalStatistic: nationalStatistic,
 				NextRelease:       "tomorrow",
-				Publications:      &[]datasetclient.Publication{},
-				QMI:               datasetclient.Publication{},
-				RelatedDatasets:   &[]datasetclient.RelatedDataset{},
+				Publications:      []datasetApiModels.GeneralDetails{},
+				QMI:               &datasetApiModels.GeneralDetails{},
+				RelatedDatasets:   []datasetApiModels.GeneralDetails{},
 				ReleaseFrequency:  "daily",
 				Title:             "dataset title",
 				UnitOfMeasure:     "unit",
-				UsageNotes:        &[]datasetclient.UsageNote{},
 				CanonicalTopic:    "topic",
 				Subtopics:         []string{"three"},
 				Survey:            "census",
-				RelatedContent:    &[]datasetclient.GeneralDetails{},
+				RelatedContent:    []datasetApiModels.GeneralDetails{},
 			},
-			Version: datasetclient.Version{
-				Alerts:        &[]datasetclient.Alert{},
+			Version: datasetApiModels.Version{
+				Alerts:        &[]datasetApiModels.Alert{},
 				CollectionID:  mockCollectionId,
-				Dimensions:    []datasetclient.VersionDimension{},
+				Dimensions:    []datasetApiModels.Dimension{},
 				ID:            "version-id",
-				LatestChanges: []datasetclient.Change{},
+				LatestChanges: &[]datasetApiModels.LatestChange{},
 				Version:       1,
-				UsageNotes:    &[]datasetclient.UsageNote{},
+				UsageNotes:    &[]datasetApiModels.UsageNote{},
 			},
 			CollectionState: "in-progress",
 			VersionEtag:     etag,
 		}
 
 		Convey("And a router using the PutEditableMetadata handler", func() {
-
 			florenceToken := "testuser"
 
-			datasetClient := &DatasetClientMock{
-				PutMetadataFunc: func(ctx context.Context, userAuthToken, serviceAuthToken, collectionID, datasetID, edition, version string, editableMetadata datasetclient.EditableMetadata, versionEtag string) error {
-					if userAuthToken != florenceToken || serviceAuthToken != "" {
+			datasetClient := &DatasetAPIClientMock{
+				PutMetadataFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition, version string, editableMetadata datasetApiModels.EditableMetadata, versionEtag string) error {
+					if headers.AccessToken != florenceToken {
 						return errors.New("Function called with unexpected tokens")
 					}
-					if collectionID != mockCollectionId || datasetID != mockDatasetId || edition != mockEdition || version != mockVersionNumber {
+					if headers.CollectionID != mockCollectionId || datasetID != mockDatasetId || edition != mockEdition || version != mockVersionNumber {
 						return errors.New("Function called with unexpected parameters")
 					}
 					if versionEtag != etag {
@@ -280,7 +279,8 @@ func TestUnitPutEditableMetadata(t *testing.T) {
 			})
 
 			Convey("When a request without a collection id header is made", func() {
-				req.Header.Set("X-Florence-Token", florenceToken)
+				req.Header.Set("AccessToken", florenceToken)
+				req.Header.Set("X-Florence-Token", "testuser") // needed for the zebedee check
 
 				router.ServeHTTP(rec, req)
 
@@ -296,7 +296,8 @@ func TestUnitPutEditableMetadata(t *testing.T) {
 
 			Convey("And all headers are set", func() {
 				req.Header.Set("Collection-Id", mockCollectionId)
-				req.Header.Set("X-Florence-Token", florenceToken)
+				req.Header.Set("Access-Token", florenceToken)
+				req.Header.Set("X-Florence-Token", florenceToken) // needed for the zebedee check
 
 				Convey("And the version etag is wrong", func() {
 					etag = "wrong"

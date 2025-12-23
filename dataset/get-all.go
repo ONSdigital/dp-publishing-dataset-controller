@@ -4,19 +4,21 @@ import (
 	"encoding/json"
 	"net/http"
 
-	dphandlers "github.com/ONSdigital/dp-net/handlers"
+	datasetApiSdk "github.com/ONSdigital/dp-dataset-api/sdk"
+
+	dphandlers "github.com/ONSdigital/dp-net/v3/handlers"
 	"github.com/ONSdigital/dp-publishing-dataset-controller/mapper"
 	"github.com/ONSdigital/log.go/v2/log"
 )
 
 // GetAll returns a mapped list of all datasets
-func GetAll(dc DatasetClient, batchSize, maxWorkers int) http.HandlerFunc {
+func GetAll(dc DatasetAPIClient, batchSize, maxWorkers int) http.HandlerFunc {
 	return dphandlers.ControllerHandler(func(w http.ResponseWriter, r *http.Request, lang, collectionID, accessToken string) {
 		getAll(w, r, dc, accessToken, collectionID, lang, batchSize, maxWorkers)
 	})
 }
 
-func getAll(w http.ResponseWriter, req *http.Request, dc DatasetClient, userAccessToken, collectionID, lang string, batchSize, maxWorkers int) {
+func getAll(w http.ResponseWriter, req *http.Request, dc DatasetAPIClient, userAccessToken, collectionID, lang string, batchSize, maxWorkers int) {
 	ctx := req.Context()
 
 	err := checkAccessTokenAndCollectionHeaders(userAccessToken, collectionID)
@@ -26,9 +28,14 @@ func getAll(w http.ResponseWriter, req *http.Request, dc DatasetClient, userAcce
 		return
 	}
 
+	headers := datasetApiSdk.Headers{
+		CollectionID: collectionID,
+		AccessToken:  userAccessToken,
+	}
+
 	log.Info(ctx, "calling get datasets")
 
-	datasets, err := dc.GetDatasetsInBatches(ctx, userAccessToken, "", collectionID, batchSize, maxWorkers)
+	datasets, err := dc.GetDatasetsInBatches(ctx, headers, batchSize, maxWorkers)
 	if err != nil {
 		log.Error(ctx, "error getting all datasets from dataset API", err)
 		http.Error(w, "error getting all datasets from dataset API", http.StatusInternalServerError)
@@ -44,7 +51,12 @@ func getAll(w http.ResponseWriter, req *http.Request, dc DatasetClient, userAcce
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(b)
+	_, err = w.Write(b)
+	if err != nil {
+		log.Error(ctx, "error writing response", err)
+		http.Error(w, "error writing response", http.StatusInternalServerError)
+		return
+	}
 
 	log.Info(ctx, "get all: request successful")
 }

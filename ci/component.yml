@@ -11,8 +11,5 @@ image_resource:
 inputs:
   - name: dp-publishing-dataset-controller
 
-caches:
-  - path: go/
-
 run:
-  path: dp-publishing-dataset-controller/ci/scripts/unit.sh
+  path:  dp-publishing-dataset-controller/ci/scripts/component.sh

@@ -7,28 +7,27 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	datasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
+	datasetApiSdk "github.com/ONSdigital/dp-dataset-api/sdk"
 	"github.com/gorilla/mux"
-
-	datasetclient "github.com/ONSdigital/dp-api-clients-go/v2/dataset"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestUnitGetAllDatasets(t *testing.T) {
-
 	datasetsBatchSize := 10
 	datasetsMaxWorkers := 3
 
-	mockedDatasetResponse := []datasetclient.Dataset{
+	mockedDatasetResponse := []datasetApiModels.DatasetUpdate{
 		{
 			ID: "id-1",
-			Next: &datasetclient.DatasetDetails{
+			Next: &datasetApiModels.Dataset{
 				Title: "Test title 1",
 			},
 		},
 		{
 			ID: "id-2",
-			Next: &datasetclient.DatasetDetails{
+			Next: &datasetApiModels.Dataset{
 				Title: "Test title 2",
 			},
 		},
@@ -38,14 +37,13 @@ func TestUnitGetAllDatasets(t *testing.T) {
 
 	Convey("test getAllDatasets", t, func() {
 		Convey("on success", func() {
-
-			mockDatasetClient := &DatasetClientMock{
-				GetDatasetsInBatchesFunc: func(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, batchSize int, maxWorkers int) (datasetclient.List, error) {
-					return datasetclient.List{Items: mockedDatasetResponse}, nil
+			mockDatasetClient := &DatasetAPIClientMock{
+				GetDatasetsInBatchesFunc: func(ctx context.Context, headers datasetApiSdk.Headers, batchSize int, maxWorkers int) (datasetApiSdk.DatasetsList, error) {
+					return datasetApiSdk.DatasetsList{Items: mockedDatasetResponse}, nil
 				},
 			}
 
-			req := httptest.NewRequest("GET", "/datasets", nil)
+			req := httptest.NewRequest("GET", "/datasets", http.NoBody)
 			req.Header.Set("Collection-Id", "testcollection")
 			req.Header.Set("X-Florence-Token", "testuser")
 			rec := httptest.NewRecorder()
@@ -65,15 +63,14 @@ func TestUnitGetAllDatasets(t *testing.T) {
 		})
 
 		Convey("errors if no headers are passed", func() {
-
-			mockDatasetClient := &DatasetClientMock{
-				GetDatasetsInBatchesFunc: func(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, batchSize int, maxWorkers int) (datasetclient.List, error) {
-					return datasetclient.List{}, nil
+			mockDatasetClient := &DatasetAPIClientMock{
+				GetDatasetsInBatchesFunc: func(ctx context.Context, headers datasetApiSdk.Headers, batchSize int, maxWorkers int) (datasetApiSdk.DatasetsList, error) {
+					return datasetApiSdk.DatasetsList{}, nil
 				},
 			}
 
 			Convey("collection id not set", func() {
-				req := httptest.NewRequest("GET", "/datasets", nil)
+				req := httptest.NewRequest("GET", "/datasets", http.NoBody)
 				req.Header.Set("X-Florence-Token", "testuser")
 				rec := httptest.NewRecorder()
 				router := mux.NewRouter()
@@ -92,7 +89,7 @@ func TestUnitGetAllDatasets(t *testing.T) {
 			})
 
 			Convey("user auth token not set", func() {
-				req := httptest.NewRequest("GET", "/datasets", nil)
+				req := httptest.NewRequest("GET", "/datasets", http.NoBody)
 				req.Header.Set("Collection-Id", "testcollection")
 				rec := httptest.NewRecorder()
 				router := mux.NewRouter()
@@ -112,14 +109,13 @@ func TestUnitGetAllDatasets(t *testing.T) {
 		})
 
 		Convey("handles error from dataset client", func() {
-
-			mockDatasetClient := &DatasetClientMock{
-				GetDatasetsInBatchesFunc: func(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, batchSize int, maxWorkers int) (datasetclient.List, error) {
-					return datasetclient.List{}, errors.New("test dataset API error")
+			mockDatasetClient := &DatasetAPIClientMock{
+				GetDatasetsInBatchesFunc: func(ctx context.Context, headers datasetApiSdk.Headers, batchSize int, maxWorkers int) (datasetApiSdk.DatasetsList, error) {
+					return datasetApiSdk.DatasetsList{}, errors.New("test dataset API error")
 				},
 			}
 
-			req := httptest.NewRequest("GET", "/datasets", nil)
+			req := httptest.NewRequest("GET", "/datasets", http.NoBody)
 			req.Header.Set("Collection-Id", "testcollection")
 			req.Header.Set("X-Florence-Token", "testuser")
 			rec := httptest.NewRecorder()
@@ -136,7 +132,6 @@ func TestUnitGetAllDatasets(t *testing.T) {
 				response := rec.Body.String()
 				So(response, ShouldResemble, "error getting all datasets from dataset API\n")
 			})
-
 		})
 	})
 }

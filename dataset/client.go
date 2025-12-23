@@ -3,27 +3,26 @@ package dataset
 import (
 	"context"
 
-	datasetclient "github.com/ONSdigital/dp-api-clients-go/v2/dataset"
 	zebedeeclient "github.com/ONSdigital/dp-api-clients-go/v2/zebedee"
+	datasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
+	datasetApiSdk "github.com/ONSdigital/dp-dataset-api/sdk"
 	babbageclient "github.com/ONSdigital/dp-publishing-dataset-controller/clients/topics"
 )
 
-//go:generate moq -out mocks_test.go -pkg dataset . DatasetClient ZebedeeClient BabbageClient
+//go:generate moq -out mocks_test.go -pkg dataset . DatasetAPIClient ZebedeeClient BabbageClient
 
-type DatasetClient interface {
-	GetDatasetsInBatches(ctx context.Context, userAuthToken, serviceAuthToken, collectionID string, batchSize, maxWorkers int) (datasetclient.List, error)
-	Get(ctx context.Context, userAuthToken, serviceAuthToken, collectionID, datasetID string) (m datasetclient.DatasetDetails, err error)
-	GetVersionsInBatches(ctx context.Context, userAuthToken, serviceAuthToken, downloadServiceAuthToken, collectionID, datasetID, edition string, batchSize, maxWorkers int) (m datasetclient.VersionsList, err error)
-	GetDatasetCurrentAndNext(ctx context.Context, userAuthToken, serviceAuthToken, collectionID, datasetID string) (m datasetclient.Dataset, err error)
-	GetEdition(ctx context.Context, userAuthToken, serviceAuthToken, collectionID, datasetID, edition string) (m datasetclient.Edition, err error)
-	GetEditions(ctx context.Context, userAuthToken, serviceAuthToken, collectionID, datasetID string) (m []datasetclient.Edition, err error)
-	GetVersion(ctx context.Context, userAuthToken, serviceAuthToken, downloadServiceAuthToken, collectionID, datasetID, edition, version string) (m datasetclient.Version, err error)
-	GetVersionWithHeaders(ctx context.Context, userAuthToken, serviceAuthToken, downloadServiceAuthToken, collectionID, datasetID, edition, version string) (datasetclient.Version, datasetclient.ResponseHeaders, error)
-	GetInstance(ctx context.Context, userAuthToken, serviceAuthToken, collectionID, instanceID, ifMatch string) (i datasetclient.Instance, eTag string, err error)
-	PutDataset(ctx context.Context, userAuthToken, serviceAuthToken, collectionID, datasetID string, d datasetclient.DatasetDetails) error
-	PutVersion(ctx context.Context, userAuthToken, serviceAuthToken, collectionID, datasetID, edition, version string, v datasetclient.Version) error
-	PutInstance(ctx context.Context, userAuthToken, serviceAuthToken, collectionID, instanceID string, i datasetclient.UpdateInstance, ifMatch string) (eTag string, err error)
-	PutMetadata(ctx context.Context, userAuthToken, serviceAuthToken, collectionID, datasetID, edition, version string, metadata datasetclient.EditableMetadata, versionEtag string) error
+type DatasetAPIClient interface {
+	GetDatasetsInBatches(ctx context.Context, headers datasetApiSdk.Headers, batchSize, maxWorkers int) (datasetApiSdk.DatasetsList, error)
+	GetEdition(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition string) (datasetApiModels.Edition, error)
+	GetEditions(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, q *datasetApiSdk.QueryParams) (m datasetApiSdk.EditionsList, err error)
+	GetDatasetCurrentAndNext(ctx context.Context, headers datasetApiSdk.Headers, datasetID string) (m datasetApiModels.DatasetUpdate, err error)
+	GetVersionWithHeaders(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition, version string) (v datasetApiModels.Version, h datasetApiSdk.ResponseHeaders, err error)
+	GetVersion(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition, version string) (m datasetApiModels.Version, err error)
+	GetVersionsInBatches(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition string, batchSize, maxWorkers int) (versions datasetApiSdk.VersionsList, err error)
+	PutDataset(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, d datasetApiModels.Dataset) error
+	PutMetadata(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition, version string, metadata datasetApiModels.EditableMetadata, versionEtag string) error
+	PutVersion(ctx context.Context, headers datasetApiSdk.Headers, datasetID, editionID, versionID string, version datasetApiModels.Version) (updatedVersion datasetApiModels.Version, err error)
+	PutInstance(ctx context.Context, headers datasetApiSdk.Headers, instanceID string, i datasetApiSdk.UpdateInstance, ifMatch string) (eTag string, err error)
 }
 
 type ZebedeeClient interface {

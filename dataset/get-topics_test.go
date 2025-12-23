@@ -15,7 +15,6 @@ import (
 )
 
 func TestUnitGetAllTopics(t *testing.T) {
-
 	mockTopics := babbageclient.TopicsResult{
 		Topics: babbageclient.Topic{
 			Results: []babbageclient.Result{{
@@ -39,14 +38,13 @@ func TestUnitGetAllTopics(t *testing.T) {
 
 	Convey("test getTopics", t, func() {
 		Convey("on success", func() {
-
 			mockBabbageClient := &BabbageClientMock{
 				GetTopicsFunc: func(ctx context.Context, userAuthToken string) (babbageclient.TopicsResult, error) {
 					return mockTopics, nil
 				},
 			}
 
-			req := httptest.NewRequest("GET", "/datasets/123/create", nil)
+			req := httptest.NewRequest("GET", "/datasets/123/create", http.NoBody)
 			req.Header.Set("Collection-Id", "testcollection")
 			req.Header.Set("X-Florence-Token", "testuser")
 			rec := httptest.NewRecorder()
@@ -65,7 +63,6 @@ func TestUnitGetAllTopics(t *testing.T) {
 		})
 
 		Convey("errors if no headers are passed", func() {
-
 			mockBabbageClient := &BabbageClientMock{
 				GetTopicsFunc: func(ctx context.Context, userAuthToken string) (babbageclient.TopicsResult, error) {
 					return babbageclient.TopicsResult{}, nil
@@ -73,7 +70,7 @@ func TestUnitGetAllTopics(t *testing.T) {
 			}
 
 			Convey("collection id not set", func() {
-				req := httptest.NewRequest("GET", "/datasets/123/create", nil)
+				req := httptest.NewRequest("GET", "/datasets/123/create", http.NoBody)
 				req.Header.Set("X-Florence-Token", "testuser")
 				rec := httptest.NewRecorder()
 				router := mux.NewRouter()
@@ -92,7 +89,7 @@ func TestUnitGetAllTopics(t *testing.T) {
 			})
 
 			Convey("user auth token not set", func() {
-				req := httptest.NewRequest("GET", "/datasets/123/create", nil)
+				req := httptest.NewRequest("GET", "/datasets/123/create", http.NoBody)
 				req.Header.Set("Collection-Id", "testcollection")
 				rec := httptest.NewRecorder()
 				router := mux.NewRouter()
@@ -112,14 +109,13 @@ func TestUnitGetAllTopics(t *testing.T) {
 		})
 
 		Convey("handles error from babbage client", func() {
-
 			mockBabbageClient := &BabbageClientMock{
 				GetTopicsFunc: func(ctx context.Context, userAuthToken string) (babbageclient.TopicsResult, error) {
 					return babbageclient.TopicsResult{}, errors.New("test babbage API error")
 				},
 			}
 
-			req := httptest.NewRequest("GET", "/datasets/123/create", nil)
+			req := httptest.NewRequest("GET", "/datasets/123/create", http.NoBody)
 			req.Header.Set("Collection-Id", "testcollection")
 			req.Header.Set("X-Florence-Token", "testuser")
 			rec := httptest.NewRecorder()
@@ -136,7 +132,6 @@ func TestUnitGetAllTopics(t *testing.T) {
 				response := rec.Body.String()
 				So(response, ShouldResemble, "error getting topics\n")
 			})
-
 		})
 	})
 }

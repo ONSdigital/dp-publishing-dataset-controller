@@ -4,8 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/ONSdigital/dp-api-clients-go/v2/dataset"
 	zebedee "github.com/ONSdigital/dp-api-clients-go/v2/zebedee"
+	"github.com/ONSdigital/dp-dataset-api/models"
+	datasetApiSdk "github.com/ONSdigital/dp-dataset-api/sdk"
 	babbage "github.com/ONSdigital/dp-publishing-dataset-controller/clients/topics"
 	"github.com/ONSdigital/dp-publishing-dataset-controller/model"
 	. "github.com/smartystreets/goconvey/convey"
@@ -16,22 +17,12 @@ var ctx = context.Background()
 func TestUnitMapper(t *testing.T) {
 	t.Parallel()
 	Convey("test AllDatasets", t, func() {
-		ds := dataset.List{
-			Items: []dataset.Dataset{},
-		}
-		ds.Items = append(ds.Items, dataset.Dataset{
-			ID: "test-id-1",
-			Next: &dataset.DatasetDetails{
-				Title: "test title 1",
-			},
-		}, dataset.Dataset{
-			ID: "test-id-2",
-			Next: &dataset.DatasetDetails{
-				Title: "test title 2",
-			},
-		}, dataset.Dataset{
-			ID: "test-id-3",
-		})
+		var datasetItems []models.DatasetUpdate
+		datasetItems = append(datasetItems, models.DatasetUpdate{ID: "test-id-1", Next: &models.Dataset{Title: "test title 1"}}, models.DatasetUpdate{ID: "test-id-2", Next: &models.Dataset{Title: "test title 2"}}, models.DatasetUpdate{ID: "test-id-3"})
+
+		var ds datasetApiSdk.DatasetsList
+
+		ds.Items = datasetItems
 
 		mapped := AllDatasets(ds)
 
@@ -43,25 +34,12 @@ func TestUnitMapper(t *testing.T) {
 	})
 
 	Convey("that datasets are ordered alphabetically by Title", t, func() {
-		ds := dataset.List{
-			Items: []dataset.Dataset{},
-		}
-		ds.Items = append(ds.Items, dataset.Dataset{
-			ID: "test-id-3",
-			Next: &dataset.DatasetDetails{
-				Title: "3rd Title",
-			},
-		}, dataset.Dataset{
-			ID: "test-id-1",
-			Next: &dataset.DatasetDetails{
-				Title: "1st Title",
-			},
-		}, dataset.Dataset{
-			ID: "test-id-2",
-			Next: &dataset.DatasetDetails{
-				Title: "2nd Title",
-			},
-		})
+		var datasetItems []models.DatasetUpdate
+		datasetItems = append(datasetItems, models.DatasetUpdate{ID: "test-id-3", Next: &models.Dataset{Title: "3rd Title"}}, models.DatasetUpdate{ID: "test-id-1", Next: &models.Dataset{Title: "1st Title"}}, models.DatasetUpdate{ID: "test-id-2", Next: &models.Dataset{Title: "2nd Title"}})
+
+		var ds datasetApiSdk.DatasetsList
+
+		ds.Items = append(ds.Items, datasetItems...)
 
 		mapped := AllDatasets(ds)
 
@@ -72,30 +50,12 @@ func TestUnitMapper(t *testing.T) {
 	})
 
 	Convey("that datasets with an empty title are still sorted alphabetically using their ID instead", t, func() {
-		ds := dataset.List{
-			Items: []dataset.Dataset{},
-		}
-		ds.Items = append(ds.Items, dataset.Dataset{
-			ID: "test-id-4",
-			Next: &dataset.DatasetDetails{
-				Title: "DFG",
-			},
-		}, dataset.Dataset{
-			ID: "test-id-1",
-			Next: &dataset.DatasetDetails{
-				Title: "",
-			},
-		}, dataset.Dataset{
-			ID: "test-id-2",
-			Next: &dataset.DatasetDetails{
-				Title: "",
-			},
-		}, dataset.Dataset{
-			ID: "test-id-3",
-			Next: &dataset.DatasetDetails{
-				Title: "ABC",
-			},
-		})
+		var datasetItems []models.DatasetUpdate
+		datasetItems = append(datasetItems, models.DatasetUpdate{ID: "test-id-4", Next: &models.Dataset{Title: "DFG"}}, models.DatasetUpdate{ID: "test-id-1", Next: &models.Dataset{Title: ""}}, models.DatasetUpdate{ID: "test-id-2", Next: &models.Dataset{Title: ""}}, models.DatasetUpdate{ID: "test-id-3", Next: &models.Dataset{Title: "ABC"}})
+
+		var ds datasetApiSdk.DatasetsList
+
+		ds.Items = append(ds.Items, datasetItems...)
 
 		mapped := AllDatasets(ds)
 
@@ -107,30 +67,12 @@ func TestUnitMapper(t *testing.T) {
 	})
 
 	Convey("that datasets are ordered correctly regardless of casing in the ID or Title fields", t, func() {
-		ds := dataset.List{
-			Items: []dataset.Dataset{},
-		}
-		ds.Items = append(ds.Items, dataset.Dataset{
-			ID: "test-id-4",
-			Next: &dataset.DatasetDetails{
-				Title: "dfg",
-			},
-		}, dataset.Dataset{
-			ID: "Test-id-1",
-			Next: &dataset.DatasetDetails{
-				Title: "",
-			},
-		}, dataset.Dataset{
-			ID: "test-id-2",
-			Next: &dataset.DatasetDetails{
-				Title: "ABC",
-			},
-		}, dataset.Dataset{
-			ID: "test-id-3",
-			Next: &dataset.DatasetDetails{
-				Title: "123",
-			},
-		})
+		var datasetItems []models.DatasetUpdate
+		datasetItems = append(datasetItems, models.DatasetUpdate{ID: "test-id-4", Next: &models.Dataset{Title: "dfg"}}, models.DatasetUpdate{ID: "Test-id-1", Next: &models.Dataset{Title: ""}}, models.DatasetUpdate{ID: "test-id-2", Next: &models.Dataset{Title: "ABC"}}, models.DatasetUpdate{ID: "test-id-3", Next: &models.Dataset{Title: "123"}})
+
+		var ds datasetApiSdk.DatasetsList
+
+		ds.Items = append(ds.Items, datasetItems...)
 
 		mapped := AllDatasets(ds)
 
@@ -179,33 +121,33 @@ func TestUnitMapper(t *testing.T) {
 		})
 	})
 
-	mockedAllVersions := dataset.VersionsList{
-		Items: []dataset.Version{},
+	mockedAllVersions := datasetApiSdk.VersionsList{
+		Items: []models.Version{},
 	}
-	mockedAllVersions.Items = append(mockedAllVersions.Items, dataset.Version{
+	mockedAllVersions.Items = append(mockedAllVersions.Items, models.Version{
 		ID:          "test-id-3",
 		Version:     3,
 		ReleaseDate: "",
 		State:       "edition-confirmed",
-	}, dataset.Version{
+	}, models.Version{
 		ID:          "test-id-1",
 		Version:     1,
 		ReleaseDate: "2020-11-07T00:00:00.000Z",
 		State:       "published",
-	}, dataset.Version{
+	}, models.Version{
 		ID:          "test-id-2",
 		Version:     2,
 		ReleaseDate: "2020-11-20T00:00:00.000Z",
 		State:       "published",
 	})
 
-	mockedDataset := dataset.Dataset{
-		Next: &dataset.DatasetDetails{
+	mockedDataset := models.DatasetUpdate{
+		Next: &models.Dataset{
 			Title: "Test title",
 		},
 	}
 
-	mockedEdition := dataset.Edition{
+	mockedEdition := models.Edition{
 		Edition: "edition-1",
 	}
 
@@ -223,10 +165,11 @@ func TestUnitMapper(t *testing.T) {
 
 func TestMetadata(t *testing.T) {
 	Convey("Given a dataset and version objects", t, func() {
-		mockDatasetDetails := &dataset.DatasetDetails{
+		nationalStatistic := false
+		mockDatasetDetails := &models.Dataset{
 			ID:           "foo",
 			CollectionID: "Bar",
-			Contacts: &[]dataset.Contact{
+			Contacts: []models.ContactDetails{
 				{
 					Name:      "foo",
 					Telephone: "Bar",
@@ -239,48 +182,48 @@ func TestMetadata(t *testing.T) {
 				},
 			},
 			Description: "bAz",
-			Keywords:    &[]string{"foo", "Bar", "bAz"},
+			Keywords:    []string{"foo", "Bar", "bAz"},
 			License:     "qux",
-			Links:       dataset.Links{},
-			Methodologies: &[]dataset.Methodology{
+			Links:       &models.DatasetLinks{},
+			Methodologies: []models.GeneralDetails{
 				{
 					Description: "foo",
-					URL:         "Bar",
+					HRef:        "Bar",
 					Title:       "bAz",
 				},
 				{
 					Description: "qux",
-					URL:         "quux",
+					HRef:        "quux",
 					Title:       "grault",
 				},
 			},
-			NationalStatistic: false,
+			NationalStatistic: &nationalStatistic,
 			NextRelease:       "quux",
-			Publications: &[]dataset.Publication{
+			Publications: []models.GeneralDetails{
 				{
 					Description: "Bar",
-					URL:         "bAz",
+					HRef:        "bAz",
 					Title:       "foo",
 				},
 				{
 					Description: "quux",
-					URL:         "grault",
+					HRef:        "grault",
 					Title:       "qux",
 				},
 			},
-			Publisher: &dataset.Publisher{},
-			QMI: dataset.Publication{
+			Publisher: &models.Publisher{},
+			QMI: &models.GeneralDetails{
 				Description: "foo",
-				URL:         "Bar",
+				HRef:        "Bar",
 				Title:       "bAz",
 			},
-			RelatedDatasets: &[]dataset.RelatedDataset{
+			RelatedDatasets: []models.GeneralDetails{
 				{
-					URL:   "foo",
+					HRef:  "foo",
 					Title: "Bar",
 				},
 				{
-					URL:   "bAz",
+					HRef:  "bAz",
 					Title: "qux",
 				},
 			},
@@ -292,7 +235,7 @@ func TestMetadata(t *testing.T) {
 			URI:              "xyzzy",
 			CanonicalTopic:   "1234",
 			Subtopics:        []string{"5678", "9012"},
-			RelatedContent: &[]dataset.GeneralDetails{
+			RelatedContent: []models.GeneralDetails{
 				{
 					Description: "foo",
 					HRef:        "Bar",
@@ -306,19 +249,19 @@ func TestMetadata(t *testing.T) {
 			},
 			Survey: "census",
 		}
-		mockDimensions := []dataset.VersionDimension{
+		mockDimensions := []models.Dimension{
 			{
-				Links: dataset.Links{},
+				Links: models.DimensionLink{},
 				Label: "bAz",
 			},
 			{
-				Links: dataset.Links{},
+				Links: models.DimensionLink{},
 				Label: "plaugh",
 			},
 		}
 
-		mockVersion := dataset.Version{
-			Alerts: &[]dataset.Alert{
+		mockVersion := models.Version{
+			Alerts: &[]models.Alert{
 				{
 					Date:        "2020-02-04T11:05:06.000Z",
 					Description: "Bar",
@@ -335,8 +278,7 @@ func TestMetadata(t *testing.T) {
 			Edition:      "Bar",
 			Dimensions:   mockDimensions,
 			ID:           "bAz",
-			InstanceID:   "qux",
-			LatestChanges: []dataset.Change{
+			LatestChanges: &[]models.LatestChange{
 				{
 					Description: "foo",
 					Name:        "Bar",
@@ -348,12 +290,12 @@ func TestMetadata(t *testing.T) {
 					Type:        "grault",
 				},
 			},
-			Links:       dataset.Links{},
+			Links:       &models.VersionLinks{},
 			ReleaseDate: "grault",
 			State:       "grault",
 			Temporal:    nil,
 			Version:     1,
-			UsageNotes: &[]dataset.UsageNote{
+			UsageNotes: &[]models.UsageNote{
 				{
 					Title: "foo",
 					Note:  "Bar",
@@ -366,7 +308,6 @@ func TestMetadata(t *testing.T) {
 		}
 
 		Convey("And a zebedee collection", func() {
-
 			datasetCollectionItem := zebedee.CollectionItem{
 				ID:           mockDatasetDetails.ID,
 				State:        "inProgress",
@@ -402,7 +343,6 @@ func TestMetadata(t *testing.T) {
 		Convey("And an empty EditMetadata", func() {
 			editMetadata := model.EditMetadata{}
 			Convey("When we call PutMetadata", func() {
-
 				editableMetadataObj := PutMetadata(editMetadata)
 
 				Convey("Then it returns an object with all the editable metadata fields populated", func() {
@@ -411,15 +351,13 @@ func TestMetadata(t *testing.T) {
 					So(editableMetadataObj.Title, ShouldBeEmpty)
 					So(editableMetadataObj.UnitOfMeasure, ShouldBeEmpty)
 					So(editableMetadataObj.Contacts, ShouldBeEmpty)
-					So(editableMetadataObj.QMI.Description, ShouldBeEmpty)
-					So(editableMetadataObj.QMI.Title, ShouldBeEmpty)
-					So(editableMetadataObj.QMI.URL, ShouldBeEmpty)
+					So(editableMetadataObj.QMI, ShouldBeNil)
 					So(editableMetadataObj.RelatedContent, ShouldBeEmpty)
 					So(editableMetadataObj.CanonicalTopic, ShouldBeEmpty)
 					So(editableMetadataObj.Subtopics, ShouldBeEmpty)
 					So(editableMetadataObj.License, ShouldBeEmpty)
 					So(editableMetadataObj.Methodologies, ShouldBeEmpty)
-					So(*editableMetadataObj.NationalStatistic, ShouldBeFalse)
+					So(editableMetadataObj.NationalStatistic, ShouldBeNil)
 					So(editableMetadataObj.NextRelease, ShouldBeEmpty)
 					So(editableMetadataObj.Publications, ShouldBeEmpty)
 					So(editableMetadataObj.RelatedDatasets, ShouldBeEmpty)
@@ -429,7 +367,7 @@ func TestMetadata(t *testing.T) {
 					So(editableMetadataObj.Dimensions, ShouldBeEmpty)
 					So(editableMetadataObj.ReleaseDate, ShouldBeEmpty)
 					So(editableMetadataObj.Alerts, ShouldBeNil)
-					So(editableMetadataObj.LatestChanges, ShouldBeEmpty)
+					So(editableMetadataObj.LatestChanges, ShouldBeNil)
 					So(editableMetadataObj.UsageNotes, ShouldBeNil)
 				})
 			})
@@ -441,32 +379,31 @@ func TestMetadata(t *testing.T) {
 				Version: mockVersion,
 			}
 			Convey("When we call PutMetadata", func() {
-
 				editableMetadataObj := PutMetadata(editMetadata)
 
 				Convey("Then it returns an object with all the editable metadata fields populated", func() {
 					So(editableMetadataObj.Description, ShouldEqual, editMetadata.Dataset.Description)
-					So(editableMetadataObj.Keywords, ShouldResemble, *editMetadata.Dataset.Keywords)
+					So(editableMetadataObj.Keywords, ShouldResemble, editMetadata.Dataset.Keywords)
 					So(editableMetadataObj.Title, ShouldEqual, editMetadata.Dataset.Title)
 					So(editableMetadataObj.UnitOfMeasure, ShouldEqual, editMetadata.Dataset.UnitOfMeasure)
-					So(editableMetadataObj.Contacts, ShouldResemble, *editMetadata.Dataset.Contacts)
-					So(editableMetadataObj.QMI, ShouldResemble, &editMetadata.Dataset.QMI)
-					So(editableMetadataObj.RelatedContent, ShouldResemble, *editMetadata.Dataset.RelatedContent)
+					So(editableMetadataObj.Contacts, ShouldResemble, editMetadata.Dataset.Contacts)
+					So(editableMetadataObj.QMI, ShouldResemble, editMetadata.Dataset.QMI)
+					So(editableMetadataObj.RelatedContent, ShouldResemble, editMetadata.Dataset.RelatedContent)
 					So(editableMetadataObj.CanonicalTopic, ShouldEqual, editMetadata.Dataset.CanonicalTopic)
 					So(editableMetadataObj.Subtopics, ShouldResemble, editMetadata.Dataset.Subtopics)
 					So(editableMetadataObj.License, ShouldResemble, editMetadata.Dataset.License)
-					So(editableMetadataObj.Methodologies, ShouldResemble, *editMetadata.Dataset.Methodologies)
-					So(editableMetadataObj.NationalStatistic, ShouldResemble, &editMetadata.Dataset.NationalStatistic)
+					So(editableMetadataObj.Methodologies, ShouldResemble, editMetadata.Dataset.Methodologies)
+					So(editableMetadataObj.NationalStatistic, ShouldResemble, editMetadata.Dataset.NationalStatistic)
 					So(editableMetadataObj.NextRelease, ShouldResemble, editMetadata.Dataset.NextRelease)
-					So(editableMetadataObj.Publications, ShouldResemble, *editMetadata.Dataset.Publications)
-					So(editableMetadataObj.RelatedDatasets, ShouldResemble, *editMetadata.Dataset.RelatedDatasets)
+					So(editableMetadataObj.Publications, ShouldResemble, editMetadata.Dataset.Publications)
+					So(editableMetadataObj.RelatedDatasets, ShouldResemble, editMetadata.Dataset.RelatedDatasets)
 					So(editableMetadataObj.ReleaseFrequency, ShouldResemble, editMetadata.Dataset.ReleaseFrequency)
 					So(editableMetadataObj.Survey, ShouldEqual, editMetadata.Dataset.Survey)
 
 					So(editableMetadataObj.Dimensions, ShouldResemble, editMetadata.Version.Dimensions)
 					So(editableMetadataObj.ReleaseDate, ShouldEqual, editMetadata.Version.ReleaseDate)
 					So(editableMetadataObj.Alerts, ShouldEqual, editMetadata.Version.Alerts)
-					So(editableMetadataObj.LatestChanges, ShouldResemble, &editMetadata.Version.LatestChanges)
+					So(editableMetadataObj.LatestChanges, ShouldResemble, editMetadata.Version.LatestChanges)
 					So(editableMetadataObj.UsageNotes, ShouldEqual, editMetadata.Version.UsageNotes)
 				})
 			})

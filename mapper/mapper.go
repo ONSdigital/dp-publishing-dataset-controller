@@ -10,6 +10,8 @@ import (
 
 	dataset "github.com/ONSdigital/dp-api-clients-go/v2/dataset"
 	zebedee "github.com/ONSdigital/dp-api-clients-go/v2/zebedee"
+	datasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
+	datasetApiSdk "github.com/ONSdigital/dp-dataset-api/sdk"
 	babbageclient "github.com/ONSdigital/dp-publishing-dataset-controller/clients/topics"
 	"github.com/ONSdigital/dp-publishing-dataset-controller/model"
 	"github.com/ONSdigital/log.go/v2/log"
@@ -22,10 +24,11 @@ type related struct {
 	datasets      []model.RelatedContent
 }
 
-func AllDatasets(datasets dataset.List) []model.Dataset {
+func AllDatasets(datasets datasetApiSdk.DatasetsList) []model.Dataset {
+	//nolint:prealloc // If this is changed then the order is affected and one of the unit tests fails
 	var mappedDatasets []model.Dataset
 	for _, ds := range datasets.Items {
-		if &ds == nil || ds.Next == nil || ds.Next.Type == "nomis" {
+		if ds.Next == nil || ds.Next.Type == "nomis" {
 			continue
 		}
 		mappedDatasets = append(mappedDatasets, model.Dataset{
@@ -41,29 +44,30 @@ func AllDatasets(datasets dataset.List) []model.Dataset {
 	return mappedDatasets
 }
 
-func AllVersions(ctx context.Context, dataset dataset.Dataset, edition dataset.Edition, versions dataset.VersionsList) model.VersionsPage {
-	datasetName := dataset.Next.Title
+func AllVersions(ctx context.Context, datasetUpdate datasetApiModels.DatasetUpdate, edition datasetApiModels.Edition, versions datasetApiSdk.VersionsList) model.VersionsPage {
+	datasetName := datasetUpdate.Next.Title
 	editionName := edition.Edition
-	var mappedVersions []model.Version
-	for _, v := range versions.Items {
-		title := fmt.Sprintf("Version: %v", v.Version)
-		if v.State == "published" {
+	mappedVersions := make([]model.Version, len(versions.Items))
+
+	for v := range versions.Items {
+		title := fmt.Sprintf("Version: %v", versions.Items[v].Version)
+		if versions.Items[v].State == "published" {
 			title += " (published)"
 		}
 		var timeF string
-		time, err := time.Parse("2006-01-02T15:04:05Z", v.ReleaseDate)
+		timeParse, err := time.Parse("2006-01-02T15:04:05Z", versions.Items[v].ReleaseDate)
 		if err != nil {
 			log.Warn(ctx, "failed to parse release date", log.FormatErrors([]error{err}))
 		} else {
-			timeF = time.Format("02 January 2006")
+			timeF = timeParse.Format("02 January 2006")
 		}
-		mappedVersions = append(mappedVersions, model.Version{
-			ID:          v.ID,
+		mappedVersions[v] = model.Version{
+			ID:          versions.Items[v].ID,
 			Title:       title,
-			Version:     v.Version,
+			Version:     versions.Items[v].Version,
 			ReleaseDate: timeF,
-			State:       v.State,
-		})
+			State:       versions.Items[v].State,
+		}
 	}
 
 	sort.Slice(mappedVersions, func(i, j int) bool {
@@ -77,7 +81,7 @@ func AllVersions(ctx context.Context, dataset dataset.Dataset, edition dataset.E
 	}
 }
 
-func EditMetadata(d *dataset.DatasetDetails, v dataset.Version, dim []dataset.VersionDimension, c zebedee.Collection) model.EditMetadata {
+func EditMetadata(d *datasetApiModels.Dataset, v datasetApiModels.Version, dim []datasetApiModels.Dimension, c zebedee.Collection) model.EditMetadata {
 	mappedMetadata := model.EditMetadata{
 		Dataset:      *d,
 		Version:      v,
@@ -95,20 +99,19 @@ func EditMetadata(d *dataset.DatasetDetails, v dataset.Version, dim []dataset.Ve
 	}
 
 	return mappedMetadata
-
 }
 
 // PutMetadata transform an EditMetadata object to the EditableMetadata as expected by dataset api
-func PutMetadata(m model.EditMetadata) dataset.EditableMetadata {
-	metadata := dataset.EditableMetadata{
+func PutMetadata(m model.EditMetadata) datasetApiModels.EditableMetadata {
+	metadata := datasetApiModels.EditableMetadata{
 		CanonicalTopic:    m.Dataset.CanonicalTopic,
 		Description:       m.Dataset.Description,
 		Dimensions:        m.Version.Dimensions,
-		LatestChanges:     &m.Version.LatestChanges,
+		LatestChanges:     m.Version.LatestChanges,
 		License:           m.Dataset.License,
-		NationalStatistic: &m.Dataset.NationalStatistic,
+		NationalStatistic: m.Dataset.NationalStatistic,
 		NextRelease:       m.Dataset.NextRelease,
-		QMI:               &m.Dataset.QMI,
+		QMI:               m.Dataset.QMI,
 		ReleaseDate:       m.Version.ReleaseDate,
 		ReleaseFrequency:  m.Dataset.ReleaseFrequency,
 		Subtopics:         m.Dataset.Subtopics,
@@ -118,22 +121,22 @@ func PutMetadata(m model.EditMetadata) dataset.EditableMetadata {
 	}
 
 	if m.Dataset.Contacts != nil {
-		metadata.Contacts = *m.Dataset.Contacts
+		metadata.Contacts = m.Dataset.Contacts
 	}
 	if m.Dataset.Keywords != nil {
-		metadata.Keywords = *m.Dataset.Keywords
+		metadata.Keywords = m.Dataset.Keywords
 	}
 	if m.Dataset.Methodologies != nil {
-		metadata.Methodologies = *m.Dataset.Methodologies
+		metadata.Methodologies = m.Dataset.Methodologies
 	}
 	if m.Dataset.Publications != nil {
-		metadata.Publications = *m.Dataset.Publications
+		metadata.Publications = m.Dataset.Publications
 	}
 	if m.Dataset.RelatedDatasets != nil {
-		metadata.RelatedDatasets = *m.Dataset.RelatedDatasets
+		metadata.RelatedDatasets = m.Dataset.RelatedDatasets
 	}
 	if m.Dataset.RelatedContent != nil {
-		metadata.RelatedContent = *m.Dataset.RelatedContent
+		metadata.RelatedContent = m.Dataset.RelatedContent
 	}
 
 	if m.Version.Alerts != nil {
@@ -150,7 +153,7 @@ func EditDatasetVersionMetaData(d dataset.DatasetDetails, v dataset.Version) (mo
 	keywordsString := ""
 	if d.Keywords != nil {
 		keywords := *d.Keywords
-		keywordsString = fmt.Sprint(strings.Join(keywords, ", "))
+		keywordsString = strings.Join(keywords, ", ")
 	}
 
 	relatedContent := mapRelatedContent(d.RelatedDatasets, d.Methodologies, d.Publications)
@@ -228,7 +231,6 @@ func mapRelatedContent(rd *[]dataset.RelatedDataset, rm *[]dataset.Methodology, 
 				SimpleListHeading: content.Title,
 			})
 		}
-
 	}
 
 	if rm != nil {
@@ -260,7 +262,7 @@ func mapRelatedContent(rd *[]dataset.RelatedDataset, rm *[]dataset.Methodology, 
 }
 
 func mapAlerts(v dataset.Version) ([]model.Notice, error) {
-	var notices []model.Notice
+	notices := make([]model.Notice, len(*v.Alerts))
 
 	if v.Alerts == nil {
 		return notices, nil
@@ -273,20 +275,21 @@ func mapAlerts(v dataset.Version) ([]model.Notice, error) {
 
 		noticeDate := alertDateInDateFormat.Format("02 Jan 2006")
 		simpleListHeading := fmt.Sprintf(`%s (%s)`, alert.Type, noticeDate)
-		notices = append(notices, model.Notice{
+		notices[i] = model.Notice{
 			ID:                    i,
 			Type:                  alert.Type,
 			Date:                  noticeDate,
 			Description:           alert.Description,
 			SimpleListHeading:     simpleListHeading,
 			SimpleListDescription: alert.Description,
-		})
+		}
 	}
 
 	return notices, nil
 }
 
 func mapUsageNotes(un *[]dataset.UsageNote) []model.UsageNote {
+	//nolint:prealloc // Could result in a nil pointer exception if this slice is pre-allocated
 	var usageNotes []model.UsageNote
 	if un == nil {
 		return usageNotes
@@ -305,16 +308,16 @@ func mapUsageNotes(un *[]dataset.UsageNote) []model.UsageNote {
 }
 
 func mapLatestChanges(un []dataset.Change) []model.LatestChanges {
-	var latestChanges []model.LatestChanges
+	latestChanges := make([]model.LatestChanges, len(un))
 
 	for i, change := range un {
-		latestChanges = append(latestChanges, model.LatestChanges{
+		latestChanges[i] = model.LatestChanges{
 			ID:                    i,
 			Title:                 change.Name,
 			Description:           change.Description,
 			SimpleListHeading:     change.Name,
 			SimpleListDescription: change.Description,
-		})
+		}
 	}
 	return latestChanges
 }

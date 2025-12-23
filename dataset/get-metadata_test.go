@@ -8,9 +8,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/ONSdigital/dp-api-clients-go/v2/dataset"
-	datasetclient "github.com/ONSdigital/dp-api-clients-go/v2/dataset"
-	"github.com/ONSdigital/dp-api-clients-go/v2/zebedee"
+	datasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
+	datasetApiSdk "github.com/ONSdigital/dp-dataset-api/sdk"
+
 	zebedeeclient "github.com/ONSdigital/dp-api-clients-go/v2/zebedee"
 	"github.com/ONSdigital/dp-publishing-dataset-controller/model"
 	"github.com/golang/mock/gomock"
@@ -38,15 +38,13 @@ func TestUnitHandlers(t *testing.T) {
 	t.Parallel()
 	const mockUserAuthToken = "testuser"
 	const mockDatasetID = "bar"
-	const mockEdition = "baz"
-	const mockVersionNum = "1"
 	const mockCollectionId = "test-collection"
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
 	Convey("test setStatusCode", t, func() {
 		Convey("test status code handles 404 response from client", func() {
-			req := httptest.NewRequest("GET", "http://localhost:24000", nil)
+			req := httptest.NewRequest("GET", "http://localhost:24000", http.NoBody)
 			w := httptest.NewRecorder()
 			err := &testCliError{}
 			setErrorStatusCode(req, w, err, mockDatasetID)
@@ -56,32 +54,31 @@ func TestUnitHandlers(t *testing.T) {
 	})
 
 	Convey("test getEditMetadataHandler", t, func() {
-
-		mockDatasetDetails := dataset.DatasetDetails{
+		mockDatasetDetails := datasetApiModels.Dataset{
 			ID:           "test-dataset",
 			CollectionID: mockCollectionId,
-			Links:        dataset.Links{LatestVersion: dataset.Link{URL: "/v1/datasets/test/editions/test/version/1"}},
+			Links:        &datasetApiModels.DatasetLinks{LatestVersion: &datasetApiModels.LinkObject{HRef: "/v1/datasets/test/editions/test/version/1"}},
 		}
 
-		mockDataset := dataset.Dataset{
+		mockDataset := datasetApiModels.DatasetUpdate{
 			Current: &mockDatasetDetails,
 			Next:    &mockDatasetDetails,
 		}
 
-		mockVersionDetails := dataset.Version{
+		mockVersionDetails := datasetApiModels.Version{
 			ID:      "test-version",
 			Version: 1,
 		}
 
-		datasetCollectionItem := zebedee.CollectionItem{
+		datasetCollectionItem := zebedeeclient.CollectionItem{
 			ID:           mockDatasetDetails.ID,
 			State:        "inProgress",
 			LastEditedBy: "an-user",
 		}
 
-		mockCollection := zebedee.Collection{
+		mockCollection := zebedeeclient.Collection{
 			ID: mockCollectionId,
-			Datasets: []zebedee.CollectionItem{
+			Datasets: []zebedeeclient.CollectionItem{
 
 				{
 					ID:           "foo",
@@ -92,7 +89,7 @@ func TestUnitHandlers(t *testing.T) {
 			},
 		}
 
-		responseHeaders := dataset.ResponseHeaders{ETag: "version-etag"}
+		responseHeaders := datasetApiSdk.ResponseHeaders{ETag: "version-etag"}
 
 		mockZebedeeClient := &ZebedeeClientMock{
 			GetCollectionFunc: func(ctx context.Context, userAccessToken, collectionID string) (c zebedeeclient.Collection, err error) {
@@ -104,14 +101,14 @@ func TestUnitHandlers(t *testing.T) {
 			},
 		}
 
-		mockDatasetClient := &DatasetClientMock{
-			GetDatasetCurrentAndNextFunc: func(ctx context.Context, userAuthToken, serviceAuthToken, collectionID, datasetID string) (m datasetclient.Dataset, err error) {
+		mockDatasetClient := &DatasetAPIClientMock{
+			GetDatasetCurrentAndNextFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string) (m datasetApiModels.DatasetUpdate, err error) {
 				return mockDataset, nil
 			},
-			GetVersionFunc: func(ctx context.Context, userAuthToken, serviceAuthToken, downloadServiceAuthToken, collectionID, datasetID, edition, version string) (datasetclient.Version, error) {
+			GetVersionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition, version string) (datasetApiModels.Version, error) {
 				return mockVersionDetails, nil
 			},
-			GetVersionWithHeadersFunc: func(ctx context.Context, userAuthToken, serviceAuthToken, downloadServiceAuthToken, collectionID, datasetID, edition, version string) (datasetclient.Version, datasetclient.ResponseHeaders, error) {
+			GetVersionWithHeadersFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID, edition, version string) (datasetApiModels.Version, datasetApiSdk.ResponseHeaders, error) {
 				return mockVersionDetails, responseHeaders, nil
 			},
 		}
@@ -119,7 +116,7 @@ func TestUnitHandlers(t *testing.T) {
 		Convey("when Version.State is NOT edition-confirmed returns correctly with empty dimensions struct", func() {
 			mockVersionDetails.State = "associated"
 
-			req := httptest.NewRequest("GET", "/datasets/bar/editions/baz/versions/1", nil)
+			req := httptest.NewRequest("GET", "/datasets/bar/editions/baz/versions/1", http.NoBody)
 			req.Header.Set("Collection-Id", mockCollectionId)
 			req.Header.Set("X-Florence-Token", mockUserAuthToken)
 			w := doTestRequest("/datasets/{datasetID}/editions/{editionID}/versions/{versionID}", req, GetMetadataHandler(mockDatasetClient, mockZebedeeClient), nil)
@@ -143,9 +140,9 @@ func TestUnitHandlers(t *testing.T) {
 			mockVersionDetails.State = "edition-confirmed"
 			mockVersionDetails.Version = 2
 
-			mockVersionDetails.Dimensions = []datasetclient.VersionDimension{{ID: "dim001", Label: "Test dimension"}}
+			mockVersionDetails.Dimensions = []datasetApiModels.Dimension{{ID: "dim001", Label: "Test dimension"}}
 
-			req := httptest.NewRequest("GET", "/datasets/bar/editions/baz/versions/1", nil)
+			req := httptest.NewRequest("GET", "/datasets/bar/editions/baz/versions/1", http.NoBody)
 			req.Header.Set("Collection-Id", mockCollectionId)
 			req.Header.Set("X-Florence-Token", mockUserAuthToken)
 			w := doTestRequest("/datasets/{datasetID}/editions/{editionID}/versions/{versionID}", req, GetMetadataHandler(mockDatasetClient, mockZebedeeClient), nil)

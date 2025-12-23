@@ -4,12 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	healthcheck "github.com/ONSdigital/dp-api-clients-go/v2/health"
 	health "github.com/ONSdigital/dp-healthcheck/healthcheck"
-	dphttp "github.com/ONSdigital/dp-net/http"
+	dphttp "github.com/ONSdigital/dp-net/v3/http"
 	"github.com/ONSdigital/log.go/v2/log"
 )
 
@@ -69,7 +69,7 @@ func (c *Client) GetTopics(ctx context.Context, userAccessToken string) (result 
 		return result, ErrInvalidBabbageResponse{resp.StatusCode}
 	}
 
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return
 	}
@@ -78,7 +78,7 @@ func (c *Client) GetTopics(ctx context.Context, userAccessToken string) (result 
 }
 
 func (c *Client) get(ctx context.Context, uri string) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodGet, uri, nil)
+	req, err := http.NewRequest(http.MethodGet, uri, http.NoBody)
 	if err != nil {
 		return nil, err
 	}

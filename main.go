@@ -10,8 +10,9 @@ import (
 	"github.com/ONSdigital/dp-api-clients-go/v2/dataset"
 	"github.com/ONSdigital/dp-api-clients-go/v2/health"
 	"github.com/ONSdigital/dp-api-clients-go/v2/zebedee"
+	datasetApiSdk "github.com/ONSdigital/dp-dataset-api/sdk"
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
-	dpnethttp "github.com/ONSdigital/dp-net/http"
+	dpnethttp "github.com/ONSdigital/dp-net/v3/http"
 	"github.com/ONSdigital/dp-publishing-dataset-controller/clients/topics"
 	"github.com/ONSdigital/dp-publishing-dataset-controller/config"
 	"github.com/ONSdigital/dp-publishing-dataset-controller/routes"
@@ -59,6 +60,8 @@ func main() {
 	zc := zebedee.NewWithHealthClient(apiRouterCli)
 	bc := topics.New(cfg.BabbageURL)
 
+	datasetAPISdkClient := datasetApiSdk.NewWithHealthClient(apiRouterCli)
+
 	hc := healthcheck.New(versionInfo, cfg.HealthCheckCritialTimeout, cfg.HealthCheckInterval)
 	if err = hc.AddCheck("API router", apiRouterCli.Checker); err != nil {
 		log.Fatal(ctx, "failed to add dataset API checker", err)
@@ -66,7 +69,7 @@ func main() {
 	}
 
 	router := mux.NewRouter()
-	routes.Init(router, cfg, hc, dc, zc, bc)
+	routes.Init(router, cfg, hc, dc, zc, bc, datasetAPISdkClient)
 
 	s := dpnethttp.NewServer(cfg.BindAddr, router)
 
@@ -79,11 +82,9 @@ func main() {
 
 	hc.Start(ctx)
 
-	// Block until a fatal error occurs
-	select {
-	case signal := <-signals:
-		log.Info(ctx, "quitting after os signal received", log.Data{"signal": signal})
-	}
+	// Block until a signal is called to shutdown application
+	osSignal := <-signals
+	log.Info(ctx, "quitting after os signal received", log.Data{"signal": osSignal})
 
 	log.Info(ctx, fmt.Sprintf("shutdown with timeout: %s", cfg.GracefulShutdownTimeout))
 

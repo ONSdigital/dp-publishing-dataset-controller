@@ -8,9 +8,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	datasetApiModels "github.com/ONSdigital/dp-dataset-api/models"
+	datasetApiSdk "github.com/ONSdigital/dp-dataset-api/sdk"
 	"github.com/gorilla/mux"
-
-	datasetclient "github.com/ONSdigital/dp-api-clients-go/v2/dataset"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -20,24 +20,21 @@ func TestUnitGetEditions(t *testing.T) {
 
 	datasetID := "test-dataset"
 
-	mockedDatasetResponse := datasetclient.Dataset{
-		Next: &datasetclient.DatasetDetails{
+	mockedDatasetResponse := datasetApiModels.DatasetUpdate{
+		Next: &datasetApiModels.Dataset{
 			Title: "Test title",
 		},
 	}
 
-	mockedEditionResponse := []datasetclient.Edition{
-		{
-			Edition: "edition-1",
-		},
-		{
-			Edition: "edition-2",
-		},
+	var editionList []datasetApiModels.Edition
+	editionList = append(editionList, datasetApiModels.Edition{Edition: "edition-1", Links: &datasetApiModels.EditionUpdateLinks{LatestVersion: &datasetApiModels.LinkObject{HRef: "/datasets/test-dataset/editions/edition/versions/1"}}}, datasetApiModels.Edition{Edition: "edition-2", Links: &datasetApiModels.EditionUpdateLinks{LatestVersion: &datasetApiModels.LinkObject{HRef: "/datasets/test-dataset/editions/edition2/versions/1"}}})
+
+	mockedEditionResponse := datasetApiSdk.EditionsList{
+		Items: editionList,
 	}
 
-	mockedVersionResponse := datasetclient.Version{
+	mockedVersionResponse := datasetApiModels.Version{
 		ID:          "version-1",
-		InstanceID:  "instance-001",
 		Version:     1,
 		ReleaseDate: "2020-11-07T00:00:00.000Z",
 	}
@@ -45,23 +42,23 @@ func TestUnitGetEditions(t *testing.T) {
 	expectedSuccessResponse := "{\"dataset_name\":\"Test title\",\"editions\":[{\"id\":\"edition-1\",\"title\":\"edition-1\",\"release_date\":\"\"},{\"id\":\"edition-2\",\"title\":\"edition-2\",\"release_date\":\"\"}]}"
 
 	Convey("test getAllEditions", t, func() {
-
-		mockDatasetClient := &DatasetClientMock{
-			GetDatasetCurrentAndNextFunc: func(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, datasetID string) (datasetclient.Dataset, error) {
+		mockDatasetClient := &DatasetAPIClientMock{
+			GetDatasetCurrentAndNextFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string) (datasetApiModels.DatasetUpdate, error) {
 				return mockedDatasetResponse, nil
 			},
-			GetEditionsFunc: func(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, datasetID string) ([]datasetclient.Edition, error) {
+			GetEditionsFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, q *datasetApiSdk.QueryParams) (datasetApiSdk.EditionsList, error) {
 				return mockedEditionResponse, nil
 			},
-			GetVersionFunc: func(ctx context.Context, userAuthToken string, serviceAuthToken string, downloadServiceAuthToken string, collectionID string, datasetID string, editionID string, versionID string) (datasetclient.Version, error) {
+			GetVersionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, editionID string, versionID string) (datasetApiModels.Version, error) {
 				return mockedVersionResponse, nil
 			},
 		}
 
 		Convey("on success", func() {
 			reqURL := fmt.Sprintf("/datasets/%v/editions", datasetID)
-			req := httptest.NewRequest("GET", reqURL, nil)
+			req := httptest.NewRequest("GET", reqURL, http.NoBody)
 			req.Header.Set("Collection-Id", "testcollection")
+			req.Header.Set("AccessToken", "testuser")
 			req.Header.Set("X-Florence-Token", "testuser")
 			rec := httptest.NewRecorder()
 			router := mux.NewRouter()
@@ -82,7 +79,7 @@ func TestUnitGetEditions(t *testing.T) {
 		Convey("errors if no headers are passed", func() {
 			Convey("collection id not set", func() {
 				reqURL := fmt.Sprintf("/datasets/%v/editions", datasetID)
-				req := httptest.NewRequest("GET", reqURL, nil)
+				req := httptest.NewRequest("GET", reqURL, http.NoBody)
 				req.Header.Set("X-Florence-Token", "testuser")
 				rec := httptest.NewRecorder()
 				router := mux.NewRouter()
@@ -102,7 +99,7 @@ func TestUnitGetEditions(t *testing.T) {
 
 			Convey("user auth token not set", func() {
 				reqURL := fmt.Sprintf("/datasets/%v/editions", datasetID)
-				req := httptest.NewRequest("GET", reqURL, nil)
+				req := httptest.NewRequest("GET", reqURL, http.NoBody)
 				req.Header.Set("Collection-Id", "testcollection")
 				rec := httptest.NewRecorder()
 				router := mux.NewRouter()
@@ -122,20 +119,20 @@ func TestUnitGetEditions(t *testing.T) {
 		})
 
 		Convey("handles error from dataset client", func() {
-			mockDatasetClient := &DatasetClientMock{
-				GetDatasetCurrentAndNextFunc: func(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, datasetID string) (datasetclient.Dataset, error) {
+			mockDatasetClient := &DatasetAPIClientMock{
+				GetDatasetCurrentAndNextFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string) (datasetApiModels.DatasetUpdate, error) {
 					return mockedDatasetResponse, nil
 				},
-				GetEditionsFunc: func(ctx context.Context, userAuthToken string, serviceAuthToken string, collectionID string, datasetID string) ([]datasetclient.Edition, error) {
+				GetEditionsFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, queryParams *datasetApiSdk.QueryParams) (datasetApiSdk.EditionsList, error) {
 					return mockedEditionResponse, errors.New("test dataset API error")
 				},
-				GetVersionFunc: func(ctx context.Context, userAuthToken string, serviceAuthToken string, downloadServiceAuthToken string, collectionID string, datasetID string, editionID string, versionID string) (datasetclient.Version, error) {
+				GetVersionFunc: func(ctx context.Context, headers datasetApiSdk.Headers, datasetID string, editionID string, versionID string) (datasetApiModels.Version, error) {
 					return mockedVersionResponse, nil
 				},
 			}
 
 			reqURL := fmt.Sprintf("/datasets/%v/editions", datasetID)
-			req := httptest.NewRequest("GET", reqURL, nil)
+			req := httptest.NewRequest("GET", reqURL, http.NoBody)
 			req.Header.Set("Collection-Id", "testcollection")
 			req.Header.Set("X-Florence-Token", "testuser")
 			rec := httptest.NewRecorder()
@@ -152,7 +149,6 @@ func TestUnitGetEditions(t *testing.T) {
 				response := rec.Body.String()
 				So(response, ShouldResemble, "error getting editions from dataset API: test dataset API error\n")
 			})
-
 		})
 	})
 }

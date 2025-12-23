@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	dphandlers "github.com/ONSdigital/dp-net/handlers"
+	dphandlers "github.com/ONSdigital/dp-net/v3/handlers"
 	"github.com/ONSdigital/dp-publishing-dataset-controller/mapper"
 	"github.com/ONSdigital/log.go/v2/log"
 )
@@ -44,7 +44,12 @@ func getTopics(w http.ResponseWriter, req *http.Request, bc BabbageClient, userA
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(b)
+	_, err = w.Write(b)
+	if err != nil {
+		log.Error(ctx, "error writing response", err)
+		http.Error(w, "error writing response", http.StatusInternalServerError)
+		return
+	}
 
 	log.Info(ctx, "get topics: request successful")
 }
